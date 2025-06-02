@@ -1,100 +1,121 @@
-<script setup>
-import Checkbox from '@/Components/Checkbox.vue';
-import GuestLayout from '@/Layouts/GuestLayout.vue';
-import InputError from '@/Components/InputError.vue';
-import InputLabel from '@/Components/InputLabel.vue';
-import PrimaryButton from '@/Components/PrimaryButton.vue';
-import TextInput from '@/Components/TextInput.vue';
-import { Head, Link, useForm } from '@inertiajs/vue3';
-
-defineProps({
-    canResetPassword: {
-        type: Boolean,
-    },
-    status: {
-        type: String,
-    },
-});
-
-const form = useForm({
-    email: '',
-    password: '',
-    remember: false,
-});
-
-const submit = () => {
-    form.post(route('login'), {
-        onFinish: () => form.reset('password'),
-    });
-};
-</script>
-
 <template>
-    <GuestLayout>
-        <Head title="Log in" />
+  <div class="min-h-screen bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center py-12 px-4">
+    <div class="max-w-md w-full bg-white rounded-2xl shadow-xl p-8">
+      <!-- Header -->
+      <div class="text-center mb-8">
+        <h2 class="text-3xl font-bold text-gray-800">Welcome Back</h2>
+        <p class="text-gray-600 mt-2">Sign in to your account</p>
+      </div>
 
-        <div v-if="status" class="mb-4 text-sm font-medium text-green-600">
-            {{ status }}
+      <!-- Login Form -->
+      <form @submit.prevent="handleLogin" class="space-y-6">
+        <!-- Email -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">
+            Email Address
+          </label>
+          <input
+            type="email"
+            v-model="form.email"
+            required
+            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition"
+            placeholder="Enter your email"
+          />
         </div>
 
-        <form @submit.prevent="submit">
-            <div>
-                <InputLabel for="email" value="Email" />
+        <!-- Password -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">
+            Password
+          </label>
+          <div class="relative">
+            <input
+              :type="showPassword ? 'text' : 'password'"
+              v-model="form.password"
+              required
+              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition pr-12"
+              placeholder="Enter your password"
+            />
+            <button
+              type="button"
+              @click="showPassword = !showPassword"
+              class="absolute right-3 top-3 text-gray-500 hover:text-gray-700"
+            >
+              {{ showPassword ? '👁️' : '👁️‍🗨️' }}
+            </button>
+          </div>
+        </div>
 
-                <TextInput
-                    id="email"
-                    type="email"
-                    class="mt-1 block w-full"
-                    v-model="form.email"
-                    required
-                    autofocus
-                    autocomplete="username"
-                />
+        <!-- Forgot Password -->
+        <div class="text-right">
+          <a href="#" class="text-sm text-orange-500 hover:text-orange-600">
+            Forgot password?
+          </a>
+        </div>
 
-                <InputError class="mt-2" :message="form.errors.email" />
-            </div>
+        <!-- Error Message -->
+        <div v-if="error" class="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg">
+          {{ error }}
+        </div>
 
-            <div class="mt-4">
-                <InputLabel for="password" value="Password" />
+        <!-- Login Button -->
+        <button
+          type="submit"
+          :disabled="loading"
+          class="w-full bg-orange-500 text-white py-3 rounded-lg font-semibold hover:bg-orange-600 focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 transition disabled:opacity-50"
+        >
+          {{ loading ? 'Signing in...' : 'Sign In' }}
+        </button>
+      </form>
 
-                <TextInput
-                    id="password"
-                    type="password"
-                    class="mt-1 block w-full"
-                    v-model="form.password"
-                    required
-                    autocomplete="current-password"
-                />
-
-                <InputError class="mt-2" :message="form.errors.password" />
-            </div>
-
-            <div class="mt-4 block">
-                <label class="flex items-center">
-                    <Checkbox name="remember" v-model:checked="form.remember" />
-                    <span class="ms-2 text-sm text-gray-600"
-                        >Remember me</span
-                    >
-                </label>
-            </div>
-
-            <div class="mt-4 flex items-center justify-end">
-                <Link
-                    v-if="canResetPassword"
-                    :href="route('password.request')"
-                    class="rounded-md text-sm text-gray-600 underline hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-                >
-                    Forgot your password?
-                </Link>
-
-                <PrimaryButton
-                    class="ms-4"
-                    :class="{ 'opacity-25': form.processing }"
-                    :disabled="form.processing"
-                >
-                    Log in
-                </PrimaryButton>
-            </div>
-        </form>
-    </GuestLayout>
+      <!-- Register Link -->
+      <div class="text-center mt-6">
+        <p class="text-gray-600">
+          Don't have an account?
+          <router-link to="/register" class="text-orange-500 hover:text-orange-600 font-medium">
+            Sign up
+          </router-link>
+        </p>
+      </div>
+    </div>
+  </div>
 </template>
+
+<script setup>
+import { ref } from 'vue'
+import { useRouter } from 'vue-router'
+import axios from 'axios'
+
+const router = useRouter()
+
+// Form data
+const form = ref({
+  email: '',
+  password: ''
+})
+
+const showPassword = ref(false)
+const loading = ref(false)
+const error = ref('')
+
+// Handle login
+const handleLogin = async () => {
+  loading.value = true
+  error.value = ''
+
+  try {
+    const response = await axios.post('/api/login', form.value)
+
+    // Store token
+    localStorage.setItem('token', response.data.token)
+
+    // Redirect to dashboard
+    router.push('/dashboard')
+
+  } catch (err) {
+    error.value = err.response?.data?.message || 'Login failed'
+  } finally {
+    loading.value = false
+  }
+}
+</script>

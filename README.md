@@ -1,5 +1,3 @@
-# GitHub pe README.md edit kar ya local mein:
-
 # Recipe Hub 🍳
 
 A modern recipe sharing platform built with Laravel, Vue.js, and Tailwind CSS.

@@ -31,7 +31,6 @@
 
       <!-- Profile Content -->
       <div v-else class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-
         <!-- Left Column: Avatar & Stats -->
         <div class="lg:col-span-1">
           <!-- Avatar Section -->
@@ -201,80 +200,25 @@
       </div>
     </div>
 
-    <!-- Change Password Modal -->
-    <div v-if="showPasswordModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div class="bg-white rounded-2xl shadow-xl max-w-md w-full p-6">
-        <h3 class="text-xl font-bold text-gray-900 mb-4">🔒 Change Password</h3>
-
-        <form @submit.prevent="changePassword" class="space-y-4">
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">Current Password</label>
-            <input
-              type="password"
-              v-model="passwordForm.current_password"
-              required
-              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
-              placeholder="Enter current password"
-            />
-          </div>
-
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">New Password</label>
-            <input
-              type="password"
-              v-model="passwordForm.new_password"
-              required
-              minlength="8"
-              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
-              placeholder="Enter new password"
-            />
-          </div>
-
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">Confirm New Password</label>
-            <input
-              type="password"
-              v-model="passwordForm.new_password_confirmation"
-              required
-              minlength="8"
-              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
-              placeholder="Confirm new password"
-            />
-          </div>
-
-          <div class="flex gap-3 pt-4">
-            <button
-              type="button"
-              @click="closePasswordModal"
-              class="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-700 px-4 py-2 rounded-lg font-medium transition-colors"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              :disabled="isChangingPassword"
-              class="flex-1 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white px-4 py-2 rounded-lg font-medium transition-all disabled:opacity-50"
-            >
-              {{ isChangingPassword ? 'Changing...' : 'Change Password' }}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+    <!-- Change Password Modal Component -->
+    <ChangePasswordModal
+      :showModal="showPasswordModal"
+      @close="showPasswordModal = false"
+      @success="handlePasswordChangeSuccess"
+    />
   </div>
 </template>
-
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import axios from 'axios'
+import ChangePasswordModal from '@/Components/modals/ChangePasswordModal.vue'
 
 const router = useRouter()
 
 // State
 const loading = ref(true)
 const isUpdating = ref(false)
-const isChangingPassword = ref(false)
 const showPasswordModal = ref(false)
 const message = ref('')
 const messageType = ref('success')
@@ -293,12 +237,6 @@ const form = ref({
   phone: '',
   bio: '',
   location: ''
-})
-
-const passwordForm = ref({
-  current_password: '',
-  new_password: '',
-  new_password_confirmation: ''
 })
 
 // File input ref
@@ -350,7 +288,7 @@ const updateProfile = async () => {
       }
     })
 
-    // Update profile data
+    // Update profile data field
     profile.value.user = response.data.data
     showMessage('Profile updated successfully!', 'success')
 
@@ -433,43 +371,10 @@ const removeAvatar = async () => {
   }
 }
 
-const changePassword = async () => {
-  // Validate passwords match
-  if (passwordForm.value.new_password !== passwordForm.value.new_password_confirmation) {
-    showMessage('New passwords do not match', 'error')
-    return
-  }
-
-  try {
-    isChangingPassword.value = true
-    const token = localStorage.getItem('auth_token')
-
-    await axios.post('/api/user/change-password', passwordForm.value, {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
-      }
-    })
-
-    showMessage('Password changed successfully!', 'success')
-    closePasswordModal()
-
-  } catch (error) {
-    console.error('Error changing password:', error)
-    const errorMsg = error.response?.data?.message || 'Failed to change password'
-    showMessage(errorMsg, 'error')
-  } finally {
-    isChangingPassword.value = false
-  }
-}
-
-const closePasswordModal = () => {
+// New method for password change success
+const handlePasswordChangeSuccess = (message) => {
+  showMessage(message, 'success')
   showPasswordModal.value = false
-  passwordForm.value = {
-    current_password: '',
-    new_password: '',
-    new_password_confirmation: ''
-  }
 }
 
 const showMessage = (msg, type = 'success') => {

@@ -161,7 +161,7 @@ public function update(Request $request)
             ], 422);
         }
 
-        // Update password using DB
+        // Update password using DB 
         $userId = $user->id;
         $newPassword = Hash::make($request->new_password);
 

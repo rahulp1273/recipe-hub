@@ -89,12 +89,12 @@
             <!-- Recipe Content -->
             <div class="p-6">
               <!-- Title -->
-              <h3 class="text-xl font-bold text-gray-900 mb-2 line-clamp-1">
+              <h3 class="text-xl font-bold text-gray-900 mb-2 truncate">
                 {{ recipe.title || 'Untitled Recipe' }}
               </h3>
 
               <!-- Description -->
-              <p class="text-gray-600 mb-4 line-clamp-2 text-sm leading-relaxed">
+              <p class="text-gray-600 mb-4 text-sm leading-relaxed h-10 overflow-hidden">
                 {{ recipe.description || 'No description available' }}
               </p>
 
@@ -129,15 +129,23 @@
 
               <!-- Action Buttons -->
               <div class="flex space-x-2">
-                <button class="flex-1 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 shadow-md hover:shadow-lg">
+                <router-link
+                  :to="`/recipes/${recipe.id}`"
+                  class="flex-1 bg-blue-500 hover:bg-blue-600 text-white px-3 py-2 rounded-lg text-sm font-medium transition-colors text-center"
+                >
                   👁️ View
-                </button>
-                <button class="flex-1 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 shadow-md hover:shadow-lg">
+                </router-link>
+
+                <router-link
+                  :to="`/recipes/${recipe.id}/edit`"
+                  class="flex-1 bg-green-500 hover:bg-green-600 text-white px-3 py-2 rounded-lg text-sm font-medium transition-colors text-center"
+                >
                   ✏️ Edit
-                </button>
+                </router-link>
+
                 <button
                   @click="deleteRecipe(recipe.id)"
-                  class="flex-1 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 shadow-md hover:shadow-lg"
+                  class="flex-1 bg-red-500 hover:bg-red-600 text-white px-3 py-2 rounded-lg text-sm font-medium transition-colors"
                 >
                   🗑️ Delete
                 </button>
@@ -146,7 +154,7 @@
           </div>
         </div>
 
-        <!-- Load More Button (if needed) -->
+        <!-- Create More Button -->
         <div class="text-center mt-12">
           <router-link
             to="/recipes/create"
@@ -175,14 +183,15 @@ const fetchRecipes = async () => {
     loading.value = true
     const response = await axios.get('/api/my-recipes')
 
-    // Handle different response structures
     if (response.data.data && response.data.data.data) {
-      recipes.value = response.data.data.data // Paginated response
+      recipes.value = response.data.data.data
     } else if (response.data.data) {
-      recipes.value = response.data.data // Direct data
+      recipes.value = response.data.data
     } else {
-      recipes.value = response.data // Raw data
+      recipes.value = response.data
     }
+
+    console.log('Recipes loaded:', recipes.value)
 
   } catch (error) {
     console.error('Error fetching recipes:', error)
@@ -223,15 +232,14 @@ const getCategoryEmoji = (category) => {
 }
 
 const deleteRecipe = async (id) => {
-  if (confirm('Are you sure you want to delete this recipe? This action cannot be undone.')) {
+  if (confirm('Are you sure you want to delete this recipe?')) {
     try {
       const token = localStorage.getItem('auth_token')
       await axios.delete(`/api/recipes/${id}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
+        headers: { 'Authorization': `Bearer ${token}` }
       })
-      fetchRecipes() // Refresh list
+      fetchRecipes()
+      console.log('Recipe deleted successfully')
     } catch (error) {
       console.error('Error deleting recipe:', error)
       alert('Failed to delete recipe. Please try again.')
@@ -245,36 +253,10 @@ onMounted(() => {
 </script>
 
 <style scoped>
-@supports (-webkit-line-clamp: 2) {
-  .line-clamp-2 {
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-  }
-}
-
-@supports (-webkit-line-clamp: 1) {
-  .line-clamp-1 {
-    display: -webkit-box;
-    -webkit-line-clamp: 1;
-    line-clamp: 1;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-  }
-}
-
-@keyframes pulse {
-  0%, 100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: .5;
-  }
-}
-
-.animate-pulse {
-  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+/* Only essential styles - Tailwind handles the rest */
+.truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 </style>

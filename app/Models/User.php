@@ -16,6 +16,10 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'avatar_path',    // ← Add these new fields
+        'phone',
+        'bio',
+        'location',
     ];
 
     protected $hidden = [
@@ -31,7 +35,21 @@ class User extends Authenticatable
         ];
     }
 
-    public function recipes(){
+    public function recipes()
+    {
         return $this->hasMany(Recipe::class);
+    }
+
+    /**
+     * Get user's avatar URL
+     */
+    public function getAvatarUrlAttribute()
+    {
+        if ($this->avatar_path) {
+            return asset('storage/' . $this->avatar_path);
+        }
+
+        // Default avatar using user's name
+        return 'https://ui-avatars.com/api/?name=' . urlencode($this->name) . '&background=f97316&color=fff&size=200';
     }
 }

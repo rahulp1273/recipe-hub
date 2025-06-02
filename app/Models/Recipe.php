@@ -20,12 +20,19 @@ class Recipe extends Model
         'cook_time',
         'servings',
         'ingredients',
-        'instructions'
+        'instructions',
+        'views',          
+        'rating',
     ];
 
     protected $casts = [
         'ingredients' => 'array',
-        'instructions' => 'array'
+        'instructions' => 'array',
+        'prep_time' => 'integer',
+        'cook_time' => 'integer',
+        'servings' => 'integer',
+        'views' => 'integer',
+        'rating' => 'decimal:1',
     ];
 
     // Auto-generate slug when creating
@@ -36,11 +43,9 @@ class Recipe extends Model
         static::creating(function ($recipe) {
             if (empty($recipe->slug)) {
                 $recipe->slug = Str::slug($recipe->title);
-
                 // Make sure slug is unique
                 $originalSlug = $recipe->slug;
                 $count = 1;
-
                 while (static::where('slug', $recipe->slug)->exists()) {
                     $recipe->slug = $originalSlug . '-' . $count;
                     $count++;

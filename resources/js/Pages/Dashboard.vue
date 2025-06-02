@@ -14,42 +14,41 @@
 
           <!-- Navigation Links -->
           <div class="hidden md:flex items-center space-x-8">
-            <router-link
-              to="/dashboard"
-              class="text-white hover:text-orange-200 font-medium transition-colors px-3 py-2 rounded-lg hover:bg-white hover:bg-opacity-10"
-            >
+            <router-link to="/dashboard"
+              class="text-white hover:text-orange-200 font-medium transition-colors px-3 py-2 rounded-lg hover:bg-white hover:bg-opacity-10">
               Dashboard
             </router-link>
-            <router-link
-              to="/recipes"
-              class="text-white hover:text-orange-200 font-medium transition-colors px-3 py-2 rounded-lg hover:bg-white hover:bg-opacity-10"
-            >
+            <router-link to="/recipes"
+              class="text-white hover:text-orange-200 font-medium transition-colors px-3 py-2 rounded-lg hover:bg-white hover:bg-opacity-10">
               My Recipes
             </router-link>
-            <router-link
-              to="/recipes/create"
-              class="text-white hover:text-orange-200 font-medium transition-colors px-3 py-2 rounded-lg hover:bg-white hover:bg-opacity-10"
-            >
+            <router-link to="/recipes/create"
+              class="text-white hover:text-orange-200 font-medium transition-colors px-3 py-2 rounded-lg hover:bg-white hover:bg-opacity-10">
               Create Recipe
             </router-link>
           </div>
 
-          <!-- User Menu -->
-          <div class="flex items-center space-x-4">
-            <!-- User Info -->
-            <div class="hidden md:flex items-center space-x-3 bg-white bg-opacity-10 rounded-lg px-4 py-2">
-              <div class="w-8 h-8 bg-white rounded-full flex items-center justify-center">
-                <span class="text-sm font-bold text-orange-500">{{ userInitials }}</span>
+          <!-- User Menu - UPDATED DESIGN -->
+          <div class="flex items-center space-x-3">
+            <!-- Profile Link -->
+            <router-link to="/profile"
+              class="flex items-center space-x-2 text-white hover:text-orange-200 font-medium transition-colors px-3 py-2 rounded-lg hover:bg-white hover:bg-opacity-10">
+              <div class="w-8 h-8 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
+                <span class="text-sm">👤</span>
               </div>
-              <span class="text-sm text-white font-medium">{{ userName }}</span>
-            </div>
+              <span class="hidden sm:block">Profile</span>
+            </router-link>
+
+            <!-- Divider -->
+            <div class="w-px h-6 bg-white bg-opacity-30"></div>
 
             <!-- Logout Button -->
-            <button
-              @click="logout"
-              class="bg-white bg-opacity-20 hover:bg-white hover:bg-opacity-30 text-white px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 border border-white border-opacity-30"
-            >
-              Logout
+            <button @click="logout"
+              class="flex items-center space-x-2 text-white hover:text-red-200 font-medium transition-all duration-200 px-3 py-2 rounded-lg hover:bg-red-500 hover:bg-opacity-20 group">
+              <div class="w-8 h-8 bg-red-500 bg-opacity-20 group-hover:bg-opacity-30 rounded-full flex items-center justify-center transition-colors">
+                <span class="text-sm">🚪</span>
+              </div>
+              <span class="hidden sm:block">Logout</span>
             </button>
           </div>
         </div>
@@ -108,34 +107,34 @@
         </div>
       </div>
 
-      <!-- Quick Actions -->
+      <!-- Quick Actions - BACK TO 2 COLUMNS -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto mb-12">
         <!-- My Recipes -->
-        <div class="bg-white rounded-2xl shadow-lg p-8 text-center hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-blue-200">
-          <div class="w-20 h-20 bg-gradient-to-br from-blue-400 to-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
+        <div
+          class="bg-white rounded-2xl shadow-lg p-8 text-center hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-blue-200">
+          <div
+            class="w-20 h-20 bg-gradient-to-br from-blue-400 to-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
             <span class="text-4xl">📝</span>
           </div>
           <h3 class="text-2xl font-bold text-gray-900 mb-3">My Recipe Collection</h3>
           <p class="text-gray-600 mb-6 leading-relaxed">View and manage all your created recipes</p>
-          <router-link
-            to="/recipes"
-            class="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-8 py-3 rounded-xl font-semibold transition-all duration-200 inline-block shadow-lg hover:shadow-xl transform hover:-translate-y-1"
-          >
+          <router-link to="/recipes"
+            class="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-8 py-3 rounded-xl font-semibold transition-all duration-200 inline-block shadow-lg hover:shadow-xl transform hover:-translate-y-1">
             View My Recipes
           </router-link>
         </div>
 
         <!-- Create Recipe -->
-        <div class="bg-white rounded-2xl shadow-lg p-8 text-center hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-orange-200">
-          <div class="w-20 h-20 bg-gradient-to-br from-orange-400 to-red-500 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
+        <div
+          class="bg-white rounded-2xl shadow-lg p-8 text-center hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-orange-200">
+          <div
+            class="w-20 h-20 bg-gradient-to-br from-orange-400 to-red-500 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
             <span class="text-4xl">✨</span>
           </div>
           <h3 class="text-2xl font-bold text-gray-900 mb-3">Create New Recipe</h3>
           <p class="text-gray-600 mb-6 leading-relaxed">Share your culinary creativity with the world</p>
-          <router-link
-            to="/recipes/create"
-            class="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white px-8 py-3 rounded-xl font-semibold transition-all duration-200 inline-block shadow-lg hover:shadow-xl transform hover:-translate-y-1"
-          >
+          <router-link to="/recipes/create"
+            class="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white px-8 py-3 rounded-xl font-semibold transition-all duration-200 inline-block shadow-lg hover:shadow-xl transform hover:-translate-y-1">
             Create Recipe
           </router-link>
         </div>
@@ -145,21 +144,15 @@
       <div v-if="recentRecipes.length > 0" class="mb-12">
         <div class="flex items-center justify-between mb-8">
           <h3 class="text-3xl font-bold text-gray-800">Recent Recipes</h3>
-          <router-link
-            to="/recipes"
-            class="text-orange-500 hover:text-orange-600 font-medium transition-colors"
-          >
+          <router-link to="/recipes" class="text-orange-500 hover:text-orange-600 font-medium transition-colors">
             View All →
           </router-link>
         </div>
-
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <div
-            v-for="recipe in recentRecipes"
-            :key="recipe.id"
-            class="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-orange-200 transform hover:-translate-y-1"
-          >
-            <div class="h-48 bg-gradient-to-br from-orange-200 via-red-200 to-pink-200 flex items-center justify-center">
+          <div v-for="recipe in recentRecipes" :key="recipe.id"
+            class="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-orange-200 transform hover:-translate-y-1">
+            <div
+              class="h-48 bg-gradient-to-br from-orange-200 via-red-200 to-pink-200 flex items-center justify-center">
               <span class="text-5xl">🍽️</span>
             </div>
             <div class="p-6">
@@ -182,23 +175,24 @@
 
       <!-- Empty State -->
       <div v-else class="text-center py-16">
-        <div class="w-32 h-32 bg-gradient-to-br from-orange-100 to-red-100 rounded-full flex items-center justify-center mx-auto mb-8">
+        <div
+          class="w-32 h-32 bg-gradient-to-br from-orange-100 to-red-100 rounded-full flex items-center justify-center mx-auto mb-8">
           <span class="text-6xl">🍳</span>
         </div>
         <h4 class="text-3xl font-bold text-gray-800 mb-4">Ready to start cooking?</h4>
         <p class="text-xl text-gray-600 mb-10 max-w-md mx-auto">
           Create your first recipe and start building your personal cookbook!
         </p>
-        <router-link
-          to="/recipes/create"
-          class="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white px-10 py-4 rounded-xl font-bold text-lg transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1 inline-block"
-        >
+        <router-link to="/recipes/create"
+          class="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white px-10 py-4 rounded-xl font-bold text-lg transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1 inline-block">
           Create Your First Recipe
         </router-link>
       </div>
     </div>
   </div>
 </template>
+
+
 
 <script setup>
 import { ref, onMounted, computed } from 'vue'

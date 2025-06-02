@@ -4,6 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Api\RecipeController;
+use App\Http\Controllers\Api\UserProfileController;
 
 // Test route
 Route::get('/test', function () {
@@ -28,5 +29,14 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/recipes/{recipe}', [RecipeController::class, 'destroy']);      // Delete recipe
 
     // Custom recipe routes
-    Route::get('/my-recipes', [RecipeController::class, 'myRecipes']); 
+    Route::get('/my-recipes', [RecipeController::class, 'myRecipes']);
+
+    // User Profile routes
+    Route::prefix('user')->group(function () {
+        Route::get('profile', [App\Http\Controllers\Api\UserProfileController::class, 'show']);
+        Route::put('profile', [App\Http\Controllers\Api\UserProfileController::class, 'update']);
+        Route::post('profile/avatar', [App\Http\Controllers\Api\UserProfileController::class, 'uploadAvatar']);
+        Route::delete('profile/avatar', [App\Http\Controllers\Api\UserProfileController::class, 'removeAvatar']);
+        Route::post('change-password', [App\Http\Controllers\Api\UserProfileController::class, 'changePassword']);
+    });
 });

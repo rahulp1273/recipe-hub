@@ -207,9 +207,13 @@ import axios from 'axios'
 
 const router = useRouter()
 
-// User data
-const userName = ref('John Doe')
+// User data - Remove hardcoded value
+const userName = ref('') // Empty initially
+const userEmail = ref('')
+const userId = ref(null)
+
 const userInitials = computed(() => {
+  if (!userName.value) return 'U'
   return userName.value.split(' ').map(n => n[0]).join('').toUpperCase()
 })
 
@@ -219,18 +223,61 @@ const weeklyRecipes = ref(0)
 const favoriteCount = ref(0)
 const recentRecipes = ref([])
 
+// Fetch user profile data
+const fetchUserProfile = async () => {
+  try {
+    const token = localStorage.getItem('auth_token')
+    if (!token) {
+      router.push('/login')
+      return
+    }
+
+    const response = await axios.get('/api/user', {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Accept': 'application/json'
+      }
+    })
+
+    console.log('User data:', response.data) // Debug
+
+    // Set user data
+    userName.value = response.data.name || response.data.user?.name || 'User'
+    userEmail.value = response.data.email || response.data.user?.email || ''
+    userId.value = response.data.id || response.data.user?.id || null
+
+  } catch (error) {
+    console.error('Error fetching user profile:', error)
+    if (error.response?.status === 401) {
+      localStorage.removeItem('auth_token')
+      router.push('/login')
+    }
+  }
+}
+
 const fetchDashboardData = async () => {
   try {
-    const recipesResponse = await axios.get('/api/my-recipes')
+    const token = localStorage.getItem('auth_token')
+    if (!token) {
+      router.push('/login')
+      return
+    }
+
+    const recipesResponse = await axios.get('/api/my-recipes', {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Accept': 'application/json'
+      }
+    })
+
     const recipes = recipesResponse.data.data?.data || recipesResponse.data.data || []
 
     myRecipesCount.value = recipes.length
-    weeklyRecipes.value = Math.floor(recipes.length / 4) // Mock weekly data
-    favoriteCount.value = Math.floor(recipes.length / 2) // Mock favorite data
+    weeklyRecipes.value = Math.floor(recipes.length / 4)
+    favoriteCount.value = Math.floor(recipes.length / 2)
     recentRecipes.value = recipes.slice(0, 3)
   } catch (error) {
     console.error('Error fetching dashboard data:', error)
-    // Mock data for demo
     myRecipesCount.value = 0
     weeklyRecipes.value = 0
     favoriteCount.value = 0
@@ -243,19 +290,8 @@ const logout = () => {
   router.push('/login')
 }
 
-onMounted(() => {
-  fetchDashboardData()
+onMounted(async () => {
+  await fetchUserProfile() // Fetch user data first
+  await fetchDashboardData() // Then fetch recipes
 })
 </script>
-
-<style scoped>
-@supports (-webkit-line-clamp: 2) {
-  .line-clamp-2 {
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-  }
-}
-</style>

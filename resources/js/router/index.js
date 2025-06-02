@@ -3,6 +3,9 @@ import Home from '../pages/Home.vue'
 import Login from '../pages/auth/Login.vue'
 import Register from '../pages/auth/Register.vue'
 import Dashboard from '../pages/Dashboard.vue'
+import CreateRecipe from '../pages/recipes/CreateRecipe.vue'
+import RecipeList from '../pages/recipes/RecipeList.vue'
+
 
 const routes = [
   {
@@ -24,7 +27,17 @@ const routes = [
     path: '/dashboard',
     name: 'Dashboard',
     component: Dashboard
-  }
+  },
+  {
+    path: '/recipes/create',
+    name: 'CreateRecipe',
+    component: CreateRecipe
+  },
+  {
+  path: '/recipes',
+  name: 'RecipeList',
+  component: RecipeList
+}
 ]
 
 const router = createRouter({

@@ -15,43 +15,42 @@ class Recipe extends Model
         'title',
         'slug',
         'description',
-        'ingredients',
-        'instructions',
-        'image',
+        'category',
         'prep_time',
         'cook_time',
         'servings',
-        'difficulty',
-        'category',
-        'is_vegetarian',
-        'is_published',
+        'ingredients',
+        'instructions'
     ];
 
     protected $casts = [
         'ingredients' => 'array',
-        'is_vegetarian' => 'boolean',
-        'is_published' => 'boolean',
+        'instructions' => 'array'
     ];
 
-    // Relationships
-    public function user()
-    {
-        return $this->belongsTo(User::class);
-    }
-
-    // Auto-generate slug
+    // Auto-generate slug when creating
     protected static function boot()
     {
         parent::boot();
 
         static::creating(function ($recipe) {
-            $recipe->slug = Str::slug($recipe->title);
+            if (empty($recipe->slug)) {
+                $recipe->slug = Str::slug($recipe->title);
+
+                // Make sure slug is unique
+                $originalSlug = $recipe->slug;
+                $count = 1;
+
+                while (static::where('slug', $recipe->slug)->exists()) {
+                    $recipe->slug = $originalSlug . '-' . $count;
+                    $count++;
+                }
+            }
         });
     }
 
-    // Accessor for total time
-    public function getTotalTimeAttribute()
+    public function user()
     {
-        return $this->prep_time + $this->cook_time;
+        return $this->belongsTo(User::class);
     }
 }

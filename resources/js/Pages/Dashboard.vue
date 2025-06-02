@@ -281,7 +281,7 @@ const fetchDashboardData = async () => {
 
 const logout = () => {
   localStorage.removeItem('auth_token')
-  router.push('/login')
+  router.push('/')
 }
 
 onMounted(async () => {

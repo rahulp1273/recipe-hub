@@ -1,15 +1,30 @@
-# Recipe Hub 🍳
+# 🍳 RecipeHub
 
-A modern recipe sharing platform built with Laravel, Vue.js, and Tailwind CSS.
+A modern recipe sharing platform built with Laravel & Vue.js
+
+## 🚀 Quick Start
+
+**New to this project?** → Read [ONBOARDING.md](./ONBOARDING.md)
 
 ## Features
-- User authentication
-- Recipe management
-- Modern UI with Tailwind CSS
-- Vue.js components
+
+- ✅ User Authentication
+- ✅ Create/Edit/Delete Recipes
+- ✅ Recipe Management
+- 🔲 Image Upload (Coming Soon)
+- 🔲 Recipe Search & Filter (Coming Soon)
 
 ## Tech Stack
-- Laravel 12.16.0
-- Vue.js 3
-- Tailwind CSS
-- SQLite Database
+
+- **Backend:** Laravel 10
+- **Frontend:** Vue.js 3 + Vite
+- **Database:** MySQL
+- **Styling:** Tailwind CSS
+
+## Team
+
+- [Rahul Panwar] - Project Lead
+- [Saurabh Bhandari] - Developer
+
+---
+📖 **For setup instructions, see [ONBOARDING.md](./ONBOARDING.md)**

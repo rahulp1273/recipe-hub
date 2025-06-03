@@ -67,7 +67,7 @@ const props = defineProps({
   }
 })
 
-// Emits 
+// Emits
 const emit = defineEmits(['close', 'success'])
 
 // State

@@ -8,6 +8,9 @@ import RecipeList from '../pages/recipes/RecipeList.vue'
 import RecipeView from '../pages/recipes/RecipeView.vue'
 import RecipeEdit from '../pages/recipes/RecipeEdit.vue'
 import UserProfile from '../pages/UserProfile.vue'
+import HomeFeed from '@/pages/social/HomeFeed.vue'
+import PublicRecipeView from '../pages/recipes/PublicRecipeView.vue'
+
 
 const routes = [
   {
@@ -60,7 +63,21 @@ const routes = [
     name: 'UserProfile',
     component: UserProfile,
     meta: { requiresAuth: true }
-  }
+  },
+   // Social routes
+  {
+    path: '/feed',
+    name: 'HomeFeed',
+    component: HomeFeed,
+    meta: { requiresAuth: false } // Public access
+  },
+  // for social view more details
+  {
+  path: '/public/recipe/:id',
+  name: 'PublicRecipeView',
+  component: PublicRecipeView,
+  meta: { requiresAuth: false } // Public access
+},
 ]
 
 const router = createRouter({

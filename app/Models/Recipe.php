@@ -21,8 +21,11 @@ class Recipe extends Model
         'servings',
         'ingredients',
         'instructions',
-        'views',          
+        'views',
         'rating',
+        'is_public',
+        'likes_count',
+        'views_count'
     ];
 
     protected $casts = [
@@ -33,6 +36,7 @@ class Recipe extends Model
         'servings' => 'integer',
         'views' => 'integer',
         'rating' => 'decimal:1',
+        'is_public' => 'boolean',
     ];
 
     // Auto-generate slug when creating
@@ -57,5 +61,21 @@ class Recipe extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function likes()
+    {
+        return $this->hasMany(RecipeLike::class);
+    }
+
+    public function views()
+    {
+        return $this->hasMany(RecipeView::class);
+    }
+
+    public function isLikedBy($user)
+    {
+        if (!$user) return false;
+        return $this->likes()->where('user_id', $user->id)->exists();
     }
 }

@@ -62,38 +62,3 @@ Initialize with README: ✅ Yes
 Add .gitignore: ✅ Laravel
 Add license: ❌ None (for private)
 ```
-
-### **2. Branch Protection:**
-After creating, go to:
-- Settings → Branches
-- Add rule for `main` branch:
-  - ✅ Require pull request reviews
-  - ✅ Require status checks to pass
-
-### **3. Collaborators:**
-- Settings → Manage access
-- Add your team member
-- Give "Write" permission
-
----
-
-## **📂 Initial Commit Structure:**
-```
-RecipeHub/
-├── README.md              ← GitHub description
-├── ONBOARDING.md          ← Setup guide
-├── .gitignore            ← Laravel gitignore
-├── composer.json
-├── package.json
-├── app/
-├── resources/
-└── ...
-```
-
----
-
-## **🎯 Repository Topics (Tags):**
-Add these topics for better discovery:
-```
-laravel, vuejs, php, javascript, mysql, recipe-app, 
-food, cooking, tailwindcss, vite, spa

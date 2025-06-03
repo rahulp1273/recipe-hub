@@ -1,37 +1,33 @@
-import axios from 'axios';
+import axios from 'axios'
 
-// Create an axios instance with baseURL from .env
-const axiosInstance = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL,
-  withCredentials: true,
-  headers: {
-    Accept: 'application/json',
-    'Content-Type': 'application/json',
-  },
-});
+// Set default headers
+axios.defaults.headers.common['Accept'] = 'application/json'
+axios.defaults.headers.common['Content-Type'] = 'application/json'
 
 // Add token to every request
-axiosInstance.interceptors.request.use(
+axios.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('auth_token');
+    const token = localStorage.getItem('auth_token')
     if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+      config.headers.Authorization = `Bearer ${token}`
     }
-    return config;
+    return config
   },
-  (error) => Promise.reject(error)
-);
+  (error) => {
+    return Promise.reject(error)
+  }
+)
 
 // Handle 401 responses globally
-axiosInstance.interceptors.response.use(
+axios.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      localStorage.removeItem('auth_token');
-      window.location.href = '/login';
+      localStorage.removeItem('auth_token')
+      window.location.href = '/login'
     }
-    return Promise.reject(error);
+    return Promise.reject(error)
   }
-);
+)
 
-export default axiosInstance;
+export default axios

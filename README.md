@@ -49,12 +49,6 @@ This project is private and proprietary.
 **For development setup, check [ONBOARDING.md](./ONBOARDING.md)**
 ```
 
----
-
-## **🔧 Repository Settings:**
-
-### **1. Create Repository:**
-```
 Repository name: RecipeHub
 Description: 🍳 Modern recipe sharing platform - Laravel & Vue.js
 Visibility: ✅ Private

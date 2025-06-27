@@ -30,40 +30,48 @@ class RecipeController extends Controller
      * Store a newly created recipe
      */
     public function store(Request $request): JsonResponse
-{
-    $validated = $request->validate([
-        'title' => 'required|string|max:255',
-        'description' => 'nullable|string',
-        'category' => 'nullable|string|max:100',
-        'prep_time' => 'nullable|integer|min:0',
-        'cook_time' => 'nullable|integer|min:0',
-        'servings' => 'nullable|integer|min:1',
-        'ingredients' => 'required|array|min:1',
-        'ingredients.*' => 'required|string',
-        'instructions' => 'required|array|min:1',
-        'instructions.*' => 'required|string',
-    ]);
+    {
+        $validated = $request->validate([
+            'title' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'category' => 'nullable|string|max:100',
+            'prep_time' => 'nullable|integer|min:0',
+            'cook_time' => 'nullable|integer|min:0',
+            'servings' => 'nullable|integer|min:1',
+            'ingredients' => 'required|array|min:1',
+            'ingredients.*' => 'required|string',
+            'instructions' => 'required|array|min:1',
+            'instructions.*' => 'required|string',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+        ]);
 
-    $recipe = Recipe::create([
-        'user_id' => Auth::id(),
-        'title' => $validated['title'],
-        'slug' => Str::slug($validated['title']), // Add this line
-        'description' => $validated['description'],
-        'category' => $validated['category'],
-        'prep_time' => $validated['prep_time'],
-        'cook_time' => $validated['cook_time'],
-        'servings' => $validated['servings'],
-        'ingredients' => $validated['ingredients'], // Remove json_encode
-        'instructions' => $validated['instructions'], // Remove json_encode
-    ]);
+        $imagePath = null;
+        if ($request->hasFile('image')) {
+            $file = $request->file('image');
+            $filename = 'recipe_' . Auth::id() . '_' . time() . '.' . $file->getClientOriginalExtension();
+            $imagePath = $file->storeAs('recipes', $filename, 'public');
+        }
 
-    return response()->json([
-        'success' => true,
-        'message' => 'Recipe created successfully!',
-        'data' => $recipe->load('user')
-    ], 201);
-}
+        $recipe = Recipe::create([
+            'user_id' => Auth::id(),
+            'title' => $validated['title'],
+            'slug' => Str::slug($validated['title']),
+            'description' => $validated['description'],
+            'category' => $validated['category'],
+            'prep_time' => $validated['prep_time'],
+            'cook_time' => $validated['cook_time'],
+            'servings' => $validated['servings'],
+            'ingredients' => $validated['ingredients'],
+            'instructions' => $validated['instructions'],
+            'image' => $imagePath,
+        ]);
 
+        return response()->json([
+            'success' => true,
+            'message' => 'Recipe created successfully!',
+            'data' => $recipe->load('user')
+        ], 201);
+    }
 
     /**
      * Display the specified recipe
@@ -100,7 +108,25 @@ class RecipeController extends Controller
             'ingredients.*' => 'required|string',
             'instructions' => 'required|array|min:1',
             'instructions.*' => 'required|string',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+            'delete_image' => 'sometimes|boolean',
         ]);
+
+        // Handle image deletion or update
+        $imagePath = $recipe->image;
+        if ($request->has('delete_image') && $request->boolean('delete_image')) {
+            if ($recipe->image) {
+                \Storage::disk('public')->delete($recipe->image);
+                $imagePath = null;
+            }
+        } elseif ($request->hasFile('image')) {
+            if ($recipe->image) {
+                \Storage::disk('public')->delete($recipe->image);
+            }
+            $file = $request->file('image');
+            $filename = 'recipe_' . Auth::id() . '_' . time() . '.' . $file->getClientOriginalExtension();
+            $imagePath = $file->storeAs('recipes', $filename, 'public');
+        }
 
         $recipe->update([
             'title' => $validated['title'],
@@ -109,8 +135,9 @@ class RecipeController extends Controller
             'prep_time' => $validated['prep_time'],
             'cook_time' => $validated['cook_time'],
             'servings' => $validated['servings'],
-            'ingredients' => json_encode($validated['ingredients']),
-            'instructions' => json_encode($validated['instructions']),
+            'ingredients' => $validated['ingredients'],
+            'instructions' => $validated['instructions'],
+            'image' => $imagePath,
         ]);
 
         return response()->json([

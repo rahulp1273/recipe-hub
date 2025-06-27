@@ -80,8 +80,13 @@
       <div class="bg-white rounded-2xl shadow-lg overflow-hidden mb-8">
 
         <!-- Recipe Image -->
-        <div class="h-64 md:h-80 bg-gradient-to-br from-orange-200 via-red-200 to-pink-200 flex items-center justify-center">
-          <span class="text-8xl">🍽️</span>
+        <div class="h-64 md:h-80 bg-gradient-to-br from-orange-200 via-red-200 to-pink-200 flex items-center justify-center overflow-hidden">
+          <template v-if="recipe.image">
+            <img :src="`/storage/${recipe.image}`" alt="Recipe Image" class="object-cover w-full h-full" />
+          </template>
+          <template v-else>
+            <span class="text-8xl">🍽️</span>
+          </template>
         </div>
 
         <!-- Recipe Info -->

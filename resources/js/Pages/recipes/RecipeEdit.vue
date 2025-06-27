@@ -201,6 +201,25 @@
             </button>
           </div>
 
+          <!-- Image Upload Section -->
+          <div class="space-y-2">
+            <label for="image" class="block text-sm font-semibold text-gray-800">Recipe Image</label>
+            <input
+              type="file"
+              id="image"
+              accept="image/*"
+              @change="onImageChange"
+              class="w-full px-4 py-2 border border-gray-300 rounded-xl shadow-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all duration-200"
+            />
+            <div v-if="imagePreview || currentImageUrl" class="mt-2 space-y-2">
+              <img :src="imagePreview || currentImageUrl" alt="Image Preview" class="max-h-48 rounded-xl border border-gray-200 shadow" />
+              <div class="flex gap-2">
+                <button v-if="imagePreview" type="button" @click="removeImage" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-xl">Remove Image</button>
+                <button v-else-if="currentImageUrl" type="button" @click="deleteCurrentImage" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-xl">Delete Image</button>
+              </div>
+            </div>
+          </div>
+
           <!-- Action Buttons -->
           <div class="flex flex-col sm:flex-row justify-end space-y-3 sm:space-y-0 sm:space-x-4 pt-6 border-t border-gray-200">
             <router-link
@@ -259,6 +278,34 @@ const isLoading = ref(false)
 const error = ref('')
 const success = ref('')
 
+const imageFile = ref(null)
+const imagePreview = ref(null)
+const currentImageUrl = ref(null)
+const deleteImageFlag = ref(false)
+
+const onImageChange = (e) => {
+  const file = e.target.files[0]
+  if (file) {
+    imageFile.value = file
+    imagePreview.value = URL.createObjectURL(file)
+    deleteImageFlag.value = false
+  }
+}
+
+const removeImage = () => {
+  imageFile.value = null
+  imagePreview.value = null
+  // Also clear the file input value
+  const input = document.getElementById('image')
+  if (input) input.value = ''
+}
+
+const deleteCurrentImage = () => {
+  deleteImageFlag.value = true
+  currentImageUrl.value = null
+  removeImage()
+}
+
 // Fetch recipe data for editing
 const fetchRecipe = async () => {
   try {
@@ -290,7 +337,12 @@ const fetchRecipe = async () => {
       ingredients: parseArrayField(recipe.ingredients) || [''],
       instructions: parseArrayField(recipe.instructions) || ['']
     }
-
+    // Set current image URL if available
+    if (recipe.image) {
+      currentImageUrl.value = `/storage/${recipe.image}`
+    } else {
+      currentImageUrl.value = null
+    }
   } catch (error) {
     console.error('Error fetching recipe:', error)
     if (error.response?.status === 401) {
@@ -352,19 +404,30 @@ const updateRecipe = async () => {
       return
     }
 
-    const response = await axios.put(`/api/recipes/${route.params.id}`, {
-      title: form.value.title,
-      description: form.value.description,
-      category: form.value.category,
-      prep_time: parseInt(form.value.prep_time) || null,
-      cook_time: parseInt(form.value.cook_time) || null,
-      servings: parseInt(form.value.servings) || null,
-      ingredients: form.value.ingredients.filter(ingredient => ingredient.trim() !== ''),
-      instructions: form.value.instructions.filter(instruction => instruction.trim() !== '')
-    }, {
+    const formData = new FormData()
+    formData.append('title', form.value.title)
+    formData.append('description', form.value.description)
+    formData.append('category', form.value.category)
+    formData.append('prep_time', parseInt(form.value.prep_time) || '')
+    formData.append('cook_time', parseInt(form.value.cook_time) || '')
+    formData.append('servings', parseInt(form.value.servings) || '')
+    form.value.ingredients.filter(ingredient => ingredient.trim() !== '').forEach((ingredient, i) => {
+      formData.append(`ingredients[${i}]`, ingredient)
+    })
+    form.value.instructions.filter(instruction => instruction.trim() !== '').forEach((instruction, i) => {
+      formData.append(`instructions[${i}]`, instruction)
+    })
+    if (imageFile.value) {
+      formData.append('image', imageFile.value)
+    }
+    if (deleteImageFlag.value) {
+      formData.append('delete_image', '1')
+    }
+
+    const response = await axios.post(`/api/recipes/${route.params.id}?_method=PUT`, formData, {
       headers: {
         'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
+        'Content-Type': 'multipart/form-data',
         'Accept': 'application/json'
       }
     })

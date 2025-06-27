@@ -58,8 +58,13 @@
     </div>
 
     <!-- Recipe Image Placeholder -->
-    <div class="h-48 bg-gradient-to-br from-orange-200 via-red-200 to-pink-200 flex items-center justify-center cursor-pointer" @click="viewRecipe">
-      <span class="text-6xl">🍽️</span>
+    <div class="h-48 bg-gradient-to-br from-orange-200 via-red-200 to-pink-200 flex items-center justify-center cursor-pointer overflow-hidden" @click="viewRecipe">
+      <template v-if="recipe.image">
+        <img :src="`/storage/${recipe.image}`" alt="Recipe Image" class="object-cover w-full h-full" />
+      </template>
+      <template v-else>
+        <span class="text-6xl">🍽️</span>
+      </template>
     </div>
 
     <!-- Recipe Stats -->

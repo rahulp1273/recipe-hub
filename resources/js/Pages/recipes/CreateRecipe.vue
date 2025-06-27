@@ -191,6 +191,22 @@
             </button>
           </div>
 
+          <!-- Image Upload Section -->
+          <div class="space-y-2">
+            <label for="image" class="block text-sm font-semibold text-gray-800">Recipe Image</label>
+            <input
+              type="file"
+              id="image"
+              accept="image/*"
+              @change="onImageChange"
+              class="w-full px-4 py-2 border border-gray-300 rounded-xl shadow-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all duration-200"
+            />
+            <div v-if="imagePreview" class="mt-2">
+              <img :src="imagePreview" alt="Image Preview" class="max-h-48 rounded-xl border border-gray-200 shadow" />
+              <button type="button" @click="removeImage" class="mt-2 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-xl">Remove Image</button>
+            </div>
+          </div>
+
           <!-- Action Buttons -->
           <div class="flex flex-col sm:flex-row justify-end space-y-3 sm:space-y-0 sm:space-x-4 pt-6 border-t border-gray-200">
             <router-link
@@ -243,6 +259,9 @@ const form = ref({
   instructions: ['']
 })
 
+const imageFile = ref(null)
+const imagePreview = ref(null)
+
 const isLoading = ref(false)
 const error = ref('')
 const success = ref('')
@@ -265,6 +284,22 @@ const removeInstruction = (index) => {
   form.value.instructions.splice(index, 1)
 }
 
+const onImageChange = (e) => {
+  const file = e.target.files[0]
+  if (file) {
+    imageFile.value = file
+    imagePreview.value = URL.createObjectURL(file)
+  }
+}
+
+const removeImage = () => {
+  imageFile.value = null
+  imagePreview.value = null
+  // Also clear the file input value
+  const input = document.getElementById('image')
+  if (input) input.value = ''
+}
+
 // Create recipe
 const createRecipe = async () => {
   isLoading.value = true
@@ -280,19 +315,27 @@ const createRecipe = async () => {
       return
     }
 
-    const response = await axios.post('/api/recipes', {
-      title: form.value.title,
-      description: form.value.description,
-      category: form.value.category,
-      prep_time: parseInt(form.value.prep_time) || null,
-      cook_time: parseInt(form.value.cook_time) || null,
-      servings: parseInt(form.value.servings) || null,
-      ingredients: form.value.ingredients.filter(ingredient => ingredient.trim() !== ''),
-      instructions: form.value.instructions.filter(instruction => instruction.trim() !== '')
-    }, {
+    const formData = new FormData()
+    formData.append('title', form.value.title)
+    formData.append('description', form.value.description)
+    formData.append('category', form.value.category)
+    formData.append('prep_time', parseInt(form.value.prep_time) || '')
+    formData.append('cook_time', parseInt(form.value.cook_time) || '')
+    formData.append('servings', parseInt(form.value.servings) || '')
+    form.value.ingredients.filter(ingredient => ingredient.trim() !== '').forEach((ingredient, i) => {
+      formData.append(`ingredients[${i}]`, ingredient)
+    })
+    form.value.instructions.filter(instruction => instruction.trim() !== '').forEach((instruction, i) => {
+      formData.append(`instructions[${i}]`, instruction)
+    })
+    if (imageFile.value) {
+      formData.append('image', imageFile.value)
+    }
+
+    const response = await axios.post('/api/recipes', formData, {
       headers: {
         'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
+        'Content-Type': 'multipart/form-data',
         'Accept': 'application/json'
       }
     })

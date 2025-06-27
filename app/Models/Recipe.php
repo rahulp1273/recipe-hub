@@ -25,7 +25,8 @@ class Recipe extends Model
         'rating',
         'is_public',
         'likes_count',
-        'views_count'
+        'views_count',
+        'image'
     ];
 
     protected $casts = [

@@ -31,6 +31,18 @@
                             My Recipes
                         </router-link>
                         <router-link
+                            to="/collections"
+                            class="text-white hover:text-orange-200 font-medium transition-colors px-3 py-2 rounded-lg hover:bg-white hover:bg-opacity-10"
+                        >
+                            My Collections
+                        </router-link>
+                        <router-link
+                            to="/public/collections"
+                            class="text-white hover:text-orange-200 font-medium transition-colors px-3 py-2 rounded-lg hover:bg-white hover:bg-opacity-10"
+                        >
+                            Browse Collections
+                        </router-link>
+                        <router-link
                             to="/recipes/create"
                             class="text-white hover:text-orange-200 font-medium transition-colors px-3 py-2 rounded-lg hover:bg-white hover:bg-opacity-10"
                         >
@@ -155,9 +167,9 @@
                 </div>
             </div>
 
-            <!-- Quick Actions - NOW 3 COLUMNS -->
+            <!-- Quick Actions - NOW 4 COLUMNS -->
             <div
-                class="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl mx-auto mb-12"
+                class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto mb-12"
             >
                 <!-- My Recipes -->
                 <div
@@ -203,6 +215,38 @@
                     >
                         Create Recipe
                     </router-link>
+                </div>
+
+                <!-- NEW: Collections -->
+                <div
+                    class="bg-white rounded-2xl shadow-lg p-6 text-center hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-green-200"
+                >
+                    <div
+                        class="w-16 h-16 bg-gradient-to-br from-green-500 to-emerald-500 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg"
+                    >
+                        <span class="text-3xl">📁</span>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-2">
+                        My Collections
+                    </h3>
+                    <p class="text-gray-600 mb-4 text-sm leading-relaxed">
+                        Organize recipes into beautiful collections
+                    </p>
+                    <div class="space-y-2">
+                        <router-link
+                            to="/collections"
+                            class="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white px-6 py-2 rounded-xl font-semibold transition-all duration-200 inline-block shadow-lg hover:shadow-xl transform hover:-translate-y-1 text-sm"
+                        >
+                            My Collections
+                        </router-link>
+                        <br>
+                        <router-link
+                            to="/public/collections"
+                            class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-6 py-2 rounded-xl font-semibold transition-all duration-200 inline-block shadow-md hover:shadow-lg text-sm"
+                        >
+                            Browse Public Collections
+                        </router-link>
+                    </div>
                 </div>
 
                 <!-- NEW: Community Feed -->

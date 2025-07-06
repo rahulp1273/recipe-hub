@@ -79,6 +79,12 @@ class Recipe extends Model
         return $this->hasMany(RecipeComment::class);
     }
 
+    public function collections()
+    {
+        return $this->belongsToMany(RecipeCollection::class, 'collection_recipes', 'recipe_id', 'collection_id')
+                    ->withTimestamps();
+    }
+
     public function getAverageRatingAttribute()
     {
         return $this->comments()->whereNotNull('rating')->avg('rating') ?? 0;

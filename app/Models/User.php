@@ -50,6 +50,11 @@ class User extends Authenticatable
         return $this->hasMany(RecipeComment::class);
     }
 
+    public function collections()
+    {
+        return $this->hasMany(RecipeCollection::class);
+    }
+
     /**
      * Get user's avatar URL
      */

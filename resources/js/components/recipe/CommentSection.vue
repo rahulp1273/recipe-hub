@@ -11,8 +11,8 @@
       </div>
     </div>
 
-    <!-- Add Comment Form -->
-    <div v-if="!userHasCommented" class="mb-8 p-6 bg-gradient-to-r from-orange-50 to-red-50 rounded-xl border border-orange-200">
+    <!-- Add Comment Form - Only show if logged in -->
+    <div v-if="isLoggedIn && !userHasCommented" class="mb-8 p-6 bg-gradient-to-r from-orange-50 to-red-50 rounded-xl border border-orange-200">
       <h4 class="text-lg font-semibold text-gray-800 mb-4">Share Your Experience</h4>
       
       <form @submit.prevent="submitComment" class="space-y-4">
@@ -59,8 +59,23 @@
       </form>
     </div>
 
+    <!-- Login Prompt for Commenting -->
+    <div v-if="!isLoggedIn" class="mb-8 p-6 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-200 text-center">
+      <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+        <span class="text-2xl">💬</span>
+      </div>
+      <h4 class="text-lg font-semibold text-gray-800 mb-2">Join the Conversation!</h4>
+      <p class="text-gray-600 mb-4">Login to share your cooking experience and rate this recipe</p>
+      <button
+        @click="goToLogin"
+        class="bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white px-6 py-3 rounded-xl font-medium transition-all duration-200 shadow-md hover:shadow-lg"
+      >
+        Login to Comment
+      </button>
+    </div>
+
     <!-- User's Existing Comment -->
-    <div v-if="userHasCommented" class="mb-8 p-6 bg-green-50 rounded-xl border border-green-200">
+    <div v-if="isLoggedIn && userHasCommented" class="mb-8 p-6 bg-green-50 rounded-xl border border-green-200">
       <div class="flex items-center justify-between mb-4">
         <h4 class="text-lg font-semibold text-gray-800">Your Comment</h4>
         <button
@@ -153,7 +168,7 @@
               
               <!-- Delete Button (for user's own comments) -->
               <button
-                v-if="comment.user_id === currentUserId"
+                v-if="isLoggedIn && comment.user_id === currentUserId"
                 @click="deleteComment(comment.id)"
                 class="text-red-500 hover:text-red-700 text-sm font-medium"
               >
@@ -183,6 +198,7 @@
 
 <script setup>
 import { ref, onMounted, computed } from 'vue'
+import { useRouter } from 'vue-router'
 import axios from 'axios'
 
 const props = defineProps({
@@ -191,6 +207,9 @@ const props = defineProps({
     required: true
   }
 })
+
+// Router
+const router = useRouter()
 
 const comments = ref([])
 const isLoading = ref(false)
@@ -210,6 +229,11 @@ const editForm = ref({
 
 const currentUserId = ref(null)
 
+// Check if user is logged in
+const isLoggedIn = computed(() => {
+  return !!localStorage.getItem('auth_token')
+})
+
 // Computed properties
 const userHasCommented = computed(() => {
   return comments.value.some(comment => comment.user_id === currentUserId.value)
@@ -223,10 +247,8 @@ const userComment = computed(() => {
 const loadComments = async () => {
   isLoading.value = true
   try {
-    const token = localStorage.getItem('auth_token')
-    const response = await axios.get(`/api/recipes/${props.recipeId}/comments`, {
-      headers: { 'Authorization': `Bearer ${token}` }
-    })
+    // Load comments publicly (no auth required)
+    const response = await axios.get(`/api/recipes/${props.recipeId}/comments`)
     comments.value = response.data.data
   } catch (error) {
     console.error('Error loading comments:', error)
@@ -236,6 +258,11 @@ const loadComments = async () => {
 }
 
 const submitComment = async () => {
+  if (!isLoggedIn.value) {
+    goToLogin()
+    return
+  }
+
   isSubmitting.value = true
   try {
     const token = localStorage.getItem('auth_token')
@@ -309,6 +336,8 @@ const formatDate = (dateString) => {
 }
 
 const getCurrentUser = async () => {
+  if (!isLoggedIn.value) return
+  
   try {
     const token = localStorage.getItem('auth_token')
     const response = await axios.get('/api/user', {
@@ -320,9 +349,16 @@ const getCurrentUser = async () => {
   }
 }
 
+// Go to login page
+const goToLogin = () => {
+  router.push('/login')
+}
+
 // Lifecycle
 onMounted(async () => {
-  await getCurrentUser()
   await loadComments()
+  if (isLoggedIn.value) {
+    await getCurrentUser()
+  }
 })
 </script> 

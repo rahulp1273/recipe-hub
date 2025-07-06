@@ -10,6 +10,9 @@ import RecipeEdit from '../pages/recipes/RecipeEdit.vue'
 import UserProfile from '../pages/UserProfile.vue'
 import HomeFeed from '@/pages/social/HomeFeed.vue'
 import PublicRecipeView from '../pages/recipes/PublicRecipeView.vue'
+import Collections from '../pages/Collections.vue'
+import CollectionView from '../pages/CollectionView.vue'
+import PublicCollections from '../pages/PublicCollections.vue'
 
 
 const routes = [
@@ -64,12 +67,12 @@ const routes = [
     component: UserProfile,
     meta: { requiresAuth: true }
   },
-   // Social routes
+   // Social routes - PUBLIC ACCESS
   {
     path: '/feed',
     name: 'HomeFeed',
     component: HomeFeed,
-    meta: { requiresAuth: false } // Public access
+    meta: { requiresAuth: false, public: true } // Explicitly public
   },
   // for social view more details
   {
@@ -78,6 +81,24 @@ const routes = [
   component: PublicRecipeView,
   meta: { requiresAuth: false } // Public access
 },
+  {
+    path: '/collections',
+    name: 'Collections',
+    component: Collections,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/collections/:id',
+    name: 'CollectionView',
+    component: CollectionView,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/public/collections',
+    name: 'PublicCollections',
+    component: PublicCollections,
+    meta: { requiresAuth: false }
+  },
 ]
 
 const router = createRouter({
@@ -85,11 +106,24 @@ const router = createRouter({
   routes
 })
 
+// RESTORE ROUTER GUARD WITH PUBLIC ACCESS
 router.beforeEach((to, from, next) => {
   const token = localStorage.getItem('auth_token')
+  console.log('Router guard - To:', to.path, 'Requires auth:', to.meta.requiresAuth, 'Token:', token ? 'Present' : 'Not present')
+  
+  // Public routes - always allow
+  if (to.meta.requiresAuth === false) {
+    console.log('Public route - proceeding')
+    next()
+    return
+  }
+  
+  // Auth required routes
   if (to.meta.requiresAuth && !token) {
+    console.log('Auth required but no token - redirecting to login')
     next('/login')
   } else {
+    console.log('Proceeding to route')
     next()
   }
 })

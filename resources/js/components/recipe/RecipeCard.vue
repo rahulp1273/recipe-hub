@@ -5,10 +5,22 @@
     <div v-if="showLoginPrompt" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div class="bg-white rounded-2xl shadow-xl max-w-md w-full p-6 text-center">
         <div class="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
-          <span class="text-2xl">🔐</span>
+          <span class="text-2xl">
+            <template v-if="loginPromptType === 'like'">🔐</template>
+            <template v-else-if="loginPromptType === 'save'">📁</template>
+            <template v-else>👁️</template>
+          </span>
         </div>
-        <h3 class="text-xl font-bold text-gray-900 mb-2">Login Required</h3>
-        <p class="text-gray-600 mb-6">Please login to view full recipe details and access more features!</p>
+        <h3 class="text-xl font-bold text-gray-900 mb-2">
+          <template v-if="loginPromptType === 'like'">Login Required</template>
+          <template v-else-if="loginPromptType === 'save'">Login to Save</template>
+          <template v-else>Login to View</template>
+        </h3>
+        <p class="text-gray-600 mb-6">
+          <template v-if="loginPromptType === 'like'">Please login to view full recipe details and access more features!</template>
+          <template v-else-if="loginPromptType === 'save'">Please login to save recipes to your collections!</template>
+          <template v-else>Please login to view full recipe details!</template>
+        </p>
         <div class="flex gap-3">
           <button
             @click="closeLoginPrompt"
@@ -116,6 +128,12 @@
           <span class="text-sm">{{ recipe.views_count || 0 }}</span>
         </div>
 
+        <!-- Save to Collection Button -->
+        <SaveToCollectionButton 
+          :recipe-id="recipe.id"
+          @collection-created="handleCollectionCreated"
+        />
+
         <!-- View Recipe Button -->
         <button
           @click="viewRecipe"
@@ -133,6 +151,7 @@ import { defineProps, defineEmits, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import axios from 'axios'
 import LikeButton from './LikeButton.vue'
+import SaveToCollectionButton from './SaveToCollectionButton.vue'
 
 const router = useRouter()
 
@@ -149,6 +168,7 @@ const emit = defineEmits(['like-toggled', 'view-recorded'])
 
 // State for login prompt
 const showLoginPrompt = ref(false)
+const loginPromptType = ref('like') // 'like', 'save', or 'view'
 
 // Check if user is logged in
 const isLoggedIn = () => {
@@ -208,28 +228,33 @@ const getIngredientsCount = (ingredients) => {
   return 0
 }
 
-// UPDATED viewRecipe function with login check
+// UPDATED viewRecipe function - show login modal if not logged in
 const viewRecipe = async () => {
-  // Check if user is logged in
   if (!isLoggedIn()) {
+    loginPromptType.value = 'view'
     showLoginPrompt.value = true
-    return // Don't navigate, just show popup
+    return
   }
-
-  // User is logged in, proceed with view
   try {
     const token = localStorage.getItem('auth_token')
-    const response = await axios.post(`/api/recipes/${props.recipe.id}/view`, {}, {
-      headers: { 'Authorization': `Bearer ${token}` }
-    })
-
-    if (response.data.success) {
-      emit('view-recorded', props.recipe.id, response.data.views_count)
+    if (token) {
+      // User is logged in - record view
+      const response = await axios.post(`/api/recipes/${props.recipe.id}/view`, {}, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+      if (response.data.success) {
+        emit('view-recorded', props.recipe.id, response.data.views_count)
+      }
+    } else {
+      // User not logged in - still record view anonymously
+      const response = await axios.post(`/api/recipes/${props.recipe.id}/view`)
+      if (response.data.success) {
+        emit('view-recorded', props.recipe.id, response.data.views_count)
+      }
     }
   } catch (error) {
     console.error('Error recording view:', error)
   }
-
   // Navigate to PUBLIC recipe view
   router.push(`/public/recipe/${props.recipe.id}`)
 }
@@ -246,6 +271,11 @@ const goToLogin = () => {
 
 const handleLikeToggled = (isLiked, likesCount) => {
   emit('like-toggled', props.recipe.id, isLiked, likesCount)
+}
+
+const handleCollectionCreated = () => {
+  // Navigate to collections page when a new collection is created
+  router.push('/collections')
 }
 </script>
 

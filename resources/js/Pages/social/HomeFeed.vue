@@ -104,6 +104,8 @@ const hasMorePages = ref(false)
 // Methods
 const fetchFeed = async (page = 1) => {
   try {
+    console.log('Fetching feed, page:', page)
+    
     if (page === 1) {
       loading.value = true
     } else {
@@ -112,8 +114,10 @@ const fetchFeed = async (page = 1) => {
 
     const token = localStorage.getItem('auth_token')
     const headers = token ? { 'Authorization': `Bearer ${token}` } : {}
-
+    
+    console.log('Making API request to /api/feed')
     const response = await axios.get(`/api/feed?page=${page}`, { headers })
+    console.log('API response received')
 
     const data = response.data.data
 
@@ -163,6 +167,16 @@ const handleViewRecorded = (recipeId, viewsCount) => {
 
 // Lifecycle
 onMounted(() => {
+  console.log('HomeFeed component mounted')
+  console.log('Current route:', router.currentRoute.value.path)
+  console.log('Auth token:', localStorage.getItem('auth_token') ? 'Present' : 'Not present')
+  
+  // Check if we're actually on the feed route
+  if (router.currentRoute.value.path !== '/feed') {
+    console.error('Not on feed route! Current route:', router.currentRoute.value.path)
+    return
+  }
+  
   fetchFeed()
 })
 </script>

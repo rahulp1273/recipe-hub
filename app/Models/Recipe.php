@@ -74,6 +74,21 @@ class Recipe extends Model
         return $this->hasMany(RecipeView::class);
     }
 
+    public function comments()
+    {
+        return $this->hasMany(RecipeComment::class);
+    }
+
+    public function getAverageRatingAttribute()
+    {
+        return $this->comments()->whereNotNull('rating')->avg('rating') ?? 0;
+    }
+
+    public function getCommentsCountAttribute()
+    {
+        return $this->comments()->count();
+    }
+
     public function isLikedBy($user)
     {
         if (!$user) return false;

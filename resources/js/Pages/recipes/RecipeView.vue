@@ -130,6 +130,11 @@
           </div>
         </div>
       </div>
+
+      <!-- Comments Section -->
+      <div class="mt-8">
+        <CommentSection :recipe-id="recipe.id" />
+      </div>
     </div>
 
     <!-- Error State -->
@@ -155,6 +160,7 @@
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import axios from 'axios'
+import CommentSection from '../../components/recipe/CommentSection.vue'
 
 const route = useRoute()
 const router = useRouter()

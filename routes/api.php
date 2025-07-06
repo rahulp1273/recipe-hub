@@ -6,6 +6,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Api\RecipeController;
 use App\Http\Controllers\Api\UserProfileController;
 use App\Http\Controllers\Api\SocialController;
+use App\Http\Controllers\Api\CommentController;
 
 // =============================================================================
 // PUBLIC ROUTES (No Authentication Required)
@@ -59,5 +60,13 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/feed', [SocialController::class, 'getFeed']);                     // Authenticated feed (with like status)
         Route::post('/recipes/{recipe}/like', [SocialController::class, 'toggleLike']); // Like/Unlike recipe
         Route::get('/recipes/{recipe}/stats', [SocialController::class, 'getRecipeStats']); // Get recipe stats
+    });
+
+    // Comment routes (authenticated users only)
+    Route::prefix('recipes/{recipe}/comments')->group(function () {
+        Route::get('/', [CommentController::class, 'index']);                    // Get all comments for a recipe
+        Route::post('/', [CommentController::class, 'store']);                   // Add a comment
+        Route::put('/{comment}', [CommentController::class, 'update']);          // Update a comment
+        Route::delete('/{comment}', [CommentController::class, 'destroy']);      // Delete a comment
     });
 });

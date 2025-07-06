@@ -85,10 +85,19 @@
         </div>
       </div>
 
-      <!-- Ingredients Count -->
-      <div class="flex items-center space-x-1 text-sm text-gray-500 mb-4">
-        <span>🥕</span>
-        <span>{{ getIngredientsCount(recipe.ingredients) }} ingredients</span>
+      <!-- Ingredients Count & Rating -->
+      <div class="flex items-center justify-between text-sm text-gray-500 mb-4">
+        <div class="flex items-center space-x-1">
+          <span>🥕</span>
+          <span>{{ getIngredientsCount(recipe.ingredients) }} ingredients</span>
+        </div>
+        
+        <!-- Rating Display -->
+        <div v-if="recipe.average_rating > 0" class="flex items-center space-x-1">
+          <span>⭐</span>
+          <span class="font-medium">{{ recipe.average_rating.toFixed(1) }}</span>
+          <span class="text-xs">({{ recipe.comments_count || 0 }})</span>
+        </div>
       </div>
 
       <!-- Action Buttons -->

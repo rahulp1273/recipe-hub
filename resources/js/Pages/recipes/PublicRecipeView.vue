@@ -237,6 +237,26 @@
         </div>
       </div>
 
+      <!-- Comments Section (Only for logged in users) -->
+      <div v-if="isLoggedIn" class="mt-8">
+        <CommentSection :recipe-id="recipe.id" />
+      </div>
+
+      <!-- Comments Login Prompt (For logged out users) -->
+      <div v-else class="mt-8 bg-white rounded-xl shadow-lg border border-gray-100 p-6">
+        <div class="text-center py-8">
+          <span class="text-4xl mb-4 block">💬</span>
+          <h3 class="text-xl font-bold text-gray-800 mb-2">Join the Conversation!</h3>
+          <p class="text-gray-600 mb-6">Login to share your thoughts and rate this recipe</p>
+          <router-link
+            to="/login"
+            class="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white px-6 py-3 rounded-xl font-medium transition-all duration-200"
+          >
+            Login to Comment
+          </router-link>
+        </div>
+      </div>
+
       <!-- Back to Feed -->
       <div class="mt-8 text-center">
         <button
@@ -272,6 +292,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import axios from 'axios'
+import CommentSection from '../../components/recipe/CommentSection.vue'
 
 const route = useRoute()
 const router = useRouter()

@@ -78,9 +78,18 @@ class RecipeController extends Controller
      */
     public function show(Recipe $recipe): JsonResponse
     {
+        $recipe->load('user');
+        
+        // Add comments count and average rating
+        $recipe->comments_count = $recipe->comments()->count();
+        $recipe->average_rating = $recipe->comments()->whereNotNull('rating')->avg('rating') ?? 0;
+        
+        // Check if current user has liked this recipe
+        $recipe->is_liked = $recipe->isLikedBy(Auth::user());
+
         return response()->json([
             'success' => true,
-            'data' => $recipe->load('user')
+            'data' => $recipe
         ]);
     }
 

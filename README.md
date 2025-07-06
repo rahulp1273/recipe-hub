@@ -30,8 +30,8 @@ A modern recipe sharing platform where users can create, share, and discover ama
 
 - [x] User Authentication
 - [x] Basic Recipe CRUD
-- [ ] Image Upload
-- [ ] Recipe Search & Filter
+- [x] Image Upload
+- [x] Recipe Search & Filter
 - [ ] Rating System
 - [ ] Social Features
 

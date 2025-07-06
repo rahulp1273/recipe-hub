@@ -35,6 +35,68 @@
     <!-- Main Content -->
     <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
+      <!-- Search & Filters -->
+      <div
+        class="relative z-10 bg-white rounded-2xl shadow-xl p-4 mb-8 flex flex-wrap gap-3 sm:gap-4 items-center justify-between"
+        style="backdrop-filter: blur(2px);"
+      >
+        <input
+          v-model="searchQuery"
+          @input="onFilterChange"
+          type="text"
+          placeholder="Search recipes, ingredients, or users..."
+          class="flex-1 min-w-[180px] max-w-xs px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all shadow-sm"
+        />
+        <!-- All Types Dropdown -->
+        <Listbox v-model="selectedType" @update:modelValue="onFilterChange">
+          <div class="relative w-44">
+            <ListboxButton class="relative w-full cursor-pointer rounded-xl bg-white border border-gray-200 py-2 pl-4 pr-10 text-left shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500">
+              <span class="block truncate">{{ selectedType.label }}</span>
+              <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+                <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+              </span>
+            </ListboxButton>
+            <ListboxOptions class="absolute left-0 w-full z-[9999] mt-1 overflow-auto rounded-xl bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm max-h-60">
+              <ListboxOption v-for="option in typeOptions" :key="option.value" :value="option" class="cursor-pointer select-none relative py-2 pl-4 pr-10 hover:bg-orange-50">
+                <span :class="[option.value === selectedType.value ? 'font-semibold text-orange-600' : 'font-normal', 'block truncate']">{{ option.label }}</span>
+                <span v-if="option.value === selectedType.value" class="absolute inset-y-0 right-0 flex items-center pr-3 text-orange-600">✔</span>
+              </ListboxOption>
+            </ListboxOptions>
+          </div>
+        </Listbox>
+        <!-- All Categories Dropdown -->
+        <Listbox v-model="selectedCategory" @update:modelValue="onFilterChange">
+          <div class="relative w-44">
+            <ListboxButton class="relative w-full cursor-pointer rounded-xl bg-white border border-gray-200 py-2 pl-4 pr-10 text-left shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500">
+              <span class="block truncate">{{ selectedCategory.label }}</span>
+              <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+                <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+              </span>
+            </ListboxButton>
+            <ListboxOptions class="absolute left-0 w-full z-[9999] mt-1 overflow-auto rounded-xl bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm max-h-60">
+              <ListboxOption v-for="option in categoryOptions" :key="option.value" :value="option" class="cursor-pointer select-none relative py-2 pl-4 pr-10 hover:bg-orange-50">
+                <span :class="[option.value === selectedCategory.value ? 'font-semibold text-orange-600' : 'font-normal', 'block truncate']">{{ option.label }}</span>
+                <span v-if="option.value === selectedCategory.value" class="absolute inset-y-0 right-0 flex items-center pr-3 text-orange-600">✔</span>
+              </ListboxOption>
+            </ListboxOptions>
+          </div>
+        </Listbox>
+        <input
+          v-model.number="maxPrepTime"
+          @input="onFilterChange"
+          type="number"
+          min="0"
+          placeholder="Max Prep Time (min)"
+          class="w-40 max-w-xs px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 shadow-sm"
+        />
+        <button
+          @click="clearFilters"
+          class="text-sm text-orange-600 hover:text-white hover:bg-orange-500 border border-orange-200 px-4 py-2 rounded-xl font-medium transition-all duration-200 shadow-sm whitespace-nowrap"
+        >
+          Clear Filters
+        </button>
+      </div>
+
       <!-- Loading State -->
       <div v-if="loading" class="text-center py-16">
         <div class="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4 animate-pulse">
@@ -91,6 +153,7 @@ import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import axios from 'axios'
 import RecipeCard from '@/components/recipe/RecipeCard.vue'
+import { Listbox, ListboxButton, ListboxOptions, ListboxOption } from '@headlessui/vue'
 
 const router = useRouter()
 
@@ -101,11 +164,40 @@ const recipes = ref([])
 const currentPage = ref(1)
 const hasMorePages = ref(false)
 
+// Search & Filter State
+const searchQuery = ref('')
+const typeOptions = [
+  { label: 'All Types', value: '' },
+  { label: 'Vegetarian', value: 'vegetarian' },
+  { label: 'Non-Vegetarian', value: 'non-vegetarian' }
+]
+const selectedType = ref(typeOptions[0])
+const categoryOptions = [
+  { label: 'All Categories', value: '' },
+  { label: 'Breakfast', value: 'breakfast' },
+  { label: 'Lunch', value: 'lunch' },
+  { label: 'Dinner', value: 'dinner' },
+  { label: 'Snack', value: 'snack' },
+  { label: 'Dessert', value: 'dessert' }
+]
+const selectedCategory = ref(categoryOptions[0])
+const maxPrepTime = ref('')
+
+const onFilterChange = () => {
+  fetchFeed(1)
+}
+
+const clearFilters = () => {
+  searchQuery.value = ''
+  selectedType.value = typeOptions[0]
+  selectedCategory.value = categoryOptions[0]
+  maxPrepTime.value = ''
+  fetchFeed(1)
+}
+
 // Methods
 const fetchFeed = async (page = 1) => {
   try {
-    console.log('Fetching feed, page:', page)
-    
     if (page === 1) {
       loading.value = true
     } else {
@@ -114,11 +206,16 @@ const fetchFeed = async (page = 1) => {
 
     const token = localStorage.getItem('auth_token')
     const headers = token ? { 'Authorization': `Bearer ${token}` } : {}
-    
-    console.log('Making API request to /api/feed')
-    const response = await axios.get(`/api/feed?page=${page}`, { headers })
-    console.log('API response received')
 
+    // Build query params
+    const params = new URLSearchParams()
+    params.append('page', page)
+    if (searchQuery.value) params.append('search', searchQuery.value)
+    if (selectedCategory.value.value) params.append('category', selectedCategory.value.value)
+    if (selectedType.value.value) params.append('type', selectedType.value.value)
+    if (maxPrepTime.value) params.append('max_prep_time', maxPrepTime.value)
+
+    const response = await axios.get(`/api/feed?${params.toString()}`, { headers })
     const data = response.data.data
 
     if (page === 1) {
@@ -130,13 +227,10 @@ const fetchFeed = async (page = 1) => {
     currentPage.value = data.current_page
     hasMorePages.value = data.current_page < data.last_page
 
-    console.log('Feed loaded:', data)
-
   } catch (error) {
     console.error('Error fetching feed:', error)
     if (error.response?.status === 401) {
       // Not logged in - still show public feed
-      console.log('Showing public feed')
     }
   } finally {
     loading.value = false

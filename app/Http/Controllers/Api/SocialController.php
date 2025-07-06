@@ -16,10 +16,59 @@ class SocialController extends Controller
     public function getFeed(Request $request)
     {
         try {
-            $recipes = Recipe::with(['user:id,name,email', 'likes'])
-                ->where('is_public', true)
-                ->orderBy('created_at', 'desc')
-                ->paginate(10);
+            $query = Recipe::with(['user:id,name,email', 'likes'])
+                ->where('is_public', true);
+
+            // Search (title, description, ingredients, user name)
+            if ($request->filled('search')) {
+                $search = $request->input('search');
+                $query->where(function ($q) use ($search) {
+                    $q->where('title', 'like', "%$search%")
+                      ->orWhere('description', 'like', "%$search%")
+                      ->orWhere('ingredients', 'like', "%$search%")
+                      ->orWhereHas('user', function ($uq) use ($search) {
+                          $uq->where('name', 'like', "%$search%")
+                             ->orWhere('email', 'like', "%$search%") ;
+                      });
+                });
+            }
+
+            // Category filter
+            $category = $request->input('category');
+            $type = $request->input('type');
+            if ($category) {
+                $query->where('category', $category);
+            }
+
+            // Type filter (veg/non-veg) - only if category is not set, or category is also veg/non-veg and matches type
+            if ($type) {
+                if (!$category) {
+                    // No category selected, filter by type
+                    if ($type === 'vegetarian') {
+                        $query->where('category', 'vegetarian');
+                    } elseif ($type === 'non-vegetarian') {
+                        $query->where('category', 'non-vegetarian');
+                    }
+                } else if (in_array($category, ['vegetarian', 'non-vegetarian']) && $category === $type) {
+                    // Category is veg/non-veg and matches type, so keep
+                    $query->where('category', $type);
+                }
+                // If category is a meal (e.g. breakfast), ignore type filter
+            }
+
+            // Min rating filter
+            if ($request->filled('min_rating')) {
+                $minRating = (int) $request->input('min_rating');
+                $query->where('average_rating', '>=', $minRating);
+            }
+
+            // Max prep time filter
+            if ($request->filled('max_prep_time')) {
+                $maxPrep = (int) $request->input('max_prep_time');
+                $query->where('prep_time', '<=', $maxPrep);
+            }
+
+            $recipes = $query->orderBy('created_at', 'desc')->paginate(10);
 
             // Add like status for current user
             $user = Auth::user();
@@ -37,7 +86,8 @@ class SocialController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to fetch feed'
+                'message' => 'Failed to fetch feed',
+                'error' => $e->getMessage()
             ], 500);
         }
     }

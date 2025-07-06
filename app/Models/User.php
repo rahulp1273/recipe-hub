@@ -16,7 +16,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
-        'avatar_path',    // ← Add these new fields
+        'avatar_path',
         'phone',
         'bio',
         'location',

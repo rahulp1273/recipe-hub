@@ -38,7 +38,6 @@ A modern recipe sharing platform where users can create, share, and discover ama
 ## 👥 Team
 
 - **[Rahul Panwar]** - Project Lead & Full Stack Developer
-- **[Bhandari Saurabh]** - Developer
 
 ## 📄 License
 

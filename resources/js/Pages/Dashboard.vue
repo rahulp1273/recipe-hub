@@ -167,6 +167,11 @@
                 </div>
             </div>
 
+            <!-- AI Recipe Generator Section -->
+            <div class="mb-12">
+                <AiRecipeGenerator />
+            </div>
+
             <!-- Quick Actions - NOW 4 COLUMNS -->
             <div
                 class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto mb-12"
@@ -351,6 +356,7 @@
 import { ref, onMounted, computed } from "vue";
 import { useRouter } from "vue-router";
 import axios from "axios";
+import AiRecipeGenerator from "@/components/AiRecipeGenerator.vue";
 
 const router = useRouter();
 

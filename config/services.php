@@ -35,4 +35,9 @@ return [
         ],
     ],
 
+    'huggingface' => [
+        'api_key' => env('HUGGINGFACE_API_KEY'),
+        'base_url' => 'https://api-inference.huggingface.co',
+    ],
+
 ];

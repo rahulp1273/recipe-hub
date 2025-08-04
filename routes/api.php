@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\UserProfileController;
 use App\Http\Controllers\Api\SocialController;
 use App\Http\Controllers\Api\CommentController;
 use App\Http\Controllers\Api\CollectionController;
+use App\Http\Controllers\Api\AiRecipeController;
 
 // =============================================================================
 // PUBLIC ROUTES (No Authentication Required)
@@ -16,6 +17,15 @@ use App\Http\Controllers\Api\CollectionController;
 // Test route
 Route::get('/test', function () {
     return response()->json(['message' => 'API working!']);
+});
+
+// AI test route (for development)
+Route::get('/ai/test', function () {
+    return response()->json([
+        'message' => 'AI integration ready!',
+        'huggingface_key' => config('services.huggingface.api_key') ? 'Configured' : 'Not configured',
+        'note' => 'Add your Hugging Face API key to .env file'
+    ]);
 });
 
 // Auth routes
@@ -81,6 +91,12 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::delete('/{collection}', [CollectionController::class, 'destroy']); // Delete collection
         Route::post('/{collection}/recipes', [CollectionController::class, 'addRecipe']); // Add recipe to collection
         Route::delete('/{collection}/recipes', [CollectionController::class, 'removeRecipe']); // Remove recipe from collection
+    });
+
+    // AI Recipe Generation routes (authenticated users only)
+    Route::prefix('ai')->group(function () {
+        Route::post('/generate-recipe', [AiRecipeController::class, 'generateRecipe']); // Generate AI recipe
+        Route::get('/generated-recipes', [AiRecipeController::class, 'getAiGeneratedRecipes']); // Get AI generated recipes
     });
 
 });

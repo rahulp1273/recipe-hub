@@ -26,7 +26,8 @@ class Recipe extends Model
         'is_public',
         'likes_count',
         'views_count',
-        'image'
+        'image',
+        'is_ai_generated'
     ];
 
     protected $casts = [
@@ -38,6 +39,7 @@ class Recipe extends Model
         'views' => 'integer',
         'rating' => 'decimal:1',
         'is_public' => 'boolean',
+        'is_ai_generated' => 'boolean',
     ];
 
     // Auto-generate slug when creating

@@ -3,8 +3,9 @@ import vue from '@vitejs/plugin-vue';
 import { resolve } from 'path';
 
 export default defineConfig({
+    base: './',
     plugins: [
-        vue(), // only Vue plugin
+        vue(),
     ],
     resolve: {
         alias: {
@@ -12,10 +13,10 @@ export default defineConfig({
         },
     },
     build: {
-        outDir: 'dist',      // Output folder for Capacitor
-        emptyOutDir: true,   // Clears folder before build
+        outDir: 'dist',
+        emptyOutDir: true,
         rollupOptions: {
-            input: resolve(__dirname, 'index.html'), // Use our permanent index.html
+            input: resolve(__dirname, 'index.html'),
         },
     },
 });

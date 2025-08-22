@@ -1,0 +1,6 @@
+{
+  "appId": "com.rahulpanwar.recipehub",
+  "appName": "RecipeHub",
+  "webDir": "dist",
+  "bundledWebRuntime": false
+}

@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">RecipeHub</string>
+    <string name="title_activity_main">RecipeHub</string>
+    <string name="package_name">com.rahulpanwar.recipehub</string>
+    <string name="custom_url_scheme">com.rahulpanwar.recipehub</string>
+</resources>

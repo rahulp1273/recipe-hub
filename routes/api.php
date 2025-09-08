@@ -9,6 +9,9 @@ use App\Http\Controllers\Api\SocialController;
 use App\Http\Controllers\Api\CommentController;
 use App\Http\Controllers\Api\CollectionController;
 use App\Http\Controllers\Api\AiRecipeController;
+use App\Http\Controllers\Api\StoreController;
+use App\Http\Controllers\Api\StoreProductController;
+use App\Http\Controllers\Api\OrderController;
 
 // =============================================================================
 // PUBLIC ROUTES (No Authentication Required)
@@ -97,6 +100,35 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::prefix('ai')->group(function () {
         Route::post('/generate-recipe', [AiRecipeController::class, 'generateRecipe']); // Generate AI recipe
         Route::get('/generated-recipes', [AiRecipeController::class, 'getAiGeneratedRecipes']); // Get AI generated recipes
+    });
+
+    // Store routes (authenticated users only)
+    Route::prefix('stores')->group(function () {
+        Route::get('/', [StoreController::class, 'index']); // Get nearby stores
+        Route::post('/', [StoreController::class, 'store']); // Create store
+        Route::get('/my-store', [StoreController::class, 'myStore']); // Get user's store
+        Route::get('/{store}', [StoreController::class, 'show']); // Get specific store
+        Route::put('/{store}', [StoreController::class, 'update']); // Update store
+        Route::get('/{store}/orders', [StoreController::class, 'orders']); // Get store orders
+    });
+
+    // Store Product routes (authenticated users only)
+    Route::prefix('store-products')->group(function () {
+        Route::get('/', [StoreProductController::class, 'index']); // Get store products
+        Route::post('/', [StoreProductController::class, 'store']); // Add product to store
+        Route::get('/my-products', [StoreProductController::class, 'myProducts']); // Get user's store products
+        Route::get('/{product}', [StoreProductController::class, 'show']); // Get specific product
+        Route::put('/{product}', [StoreProductController::class, 'update']); // Update product
+        Route::delete('/{product}', [StoreProductController::class, 'destroy']); // Remove product
+    });
+
+    // Order routes (authenticated users only)
+    Route::prefix('orders')->group(function () {
+        Route::get('/', [OrderController::class, 'index']); // Get user's orders
+        Route::post('/', [OrderController::class, 'store']); // Place order
+        Route::get('/{order}', [OrderController::class, 'show']); // Get specific order
+        Route::put('/{order}', [OrderController::class, 'update']); // Update order status
+        Route::post('/{order}/cancel', [OrderController::class, 'cancel']); // Cancel order
     });
 
 });

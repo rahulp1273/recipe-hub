@@ -48,6 +48,12 @@
                         >
                             Create Recipe
                         </router-link>
+                        <router-link
+                            to="/orders"
+                            class="text-white hover:text-orange-200 font-medium transition-colors px-3 py-2 rounded-lg hover:bg-white hover:bg-opacity-10"
+                        >
+                            Track Orders
+                        </router-link>
                     </div>
 
                     <!-- User Menu - UPDATED DESIGN -->
@@ -172,9 +178,9 @@
                 <AiRecipeGenerator />
             </div>
 
-            <!-- Quick Actions - NOW 4 COLUMNS -->
+            <!-- Quick Actions - NOW 6 COLUMNS -->
             <div
-                class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto mb-12"
+                class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6 max-w-7xl mx-auto mb-12"
             >
                 <!-- My Recipes -->
                 <div
@@ -276,6 +282,32 @@
                         Explore Feed
                     </router-link>
                 </div>
+
+                <!-- Order Tracking -->
+                <div
+                    class="bg-white rounded-2xl shadow-lg p-6 text-center hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-indigo-200"
+                >
+                    <div
+                        class="w-16 h-16 bg-gradient-to-br from-indigo-500 to-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg"
+                    >
+                        <span class="text-3xl">📦</span>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-2">
+                        Track Orders
+                    </h3>
+                    <p class="text-gray-600 mb-4 text-sm leading-relaxed">
+                        Monitor your food delivery status in real-time
+                    </p>
+                    <router-link
+                        to="/orders"
+                        class="bg-gradient-to-r from-indigo-500 to-blue-600 hover:from-indigo-600 hover:to-blue-700 text-white px-6 py-2 rounded-xl font-semibold transition-all duration-200 inline-block shadow-lg hover:shadow-xl transform hover:-translate-y-1 text-sm"
+                    >
+                        Track Orders
+                    </router-link>
+                </div>
+
+                <!-- My Store -->
+                <StoreCard />
             </div>
 
             <!-- Recent Recipes -->
@@ -345,10 +377,11 @@
                     to="/recipes/create"
                     class="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white px-10 py-4 rounded-xl font-bold text-lg transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1 inline-block"
                 >
-                    Create Your First Recipe
+                    Create Your First Recipes
                 </router-link>
             </div>
         </div>
+
     </div>
 </template>
 
@@ -357,6 +390,7 @@ import { ref, onMounted, computed } from "vue";
 import { useRouter } from "vue-router";
 import axios from "axios";
 import AiRecipeGenerator from "@/components/AiRecipeGenerator.vue";
+import StoreCard from "@/components/StoreCard.vue";
 
 const router = useRouter();
 
@@ -448,6 +482,7 @@ const logout = () => {
     localStorage.removeItem("auth_token");
     router.push("/");
 };
+
 
 onMounted(async () => {
     await fetchUserProfile(); // Fetch user data first

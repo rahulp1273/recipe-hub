@@ -12,6 +12,15 @@ export default defineConfig({
             '@': resolve(__dirname, 'resources/js'),
         },
     },
+    server: {
+        proxy: {
+            '/api': {
+                target: 'http://localhost:8000',
+                changeOrigin: true,
+                secure: false,
+            },
+        },
+    },
     build: {
         outDir: 'dist',
         emptyOutDir: true,

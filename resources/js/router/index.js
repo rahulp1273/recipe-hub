@@ -13,6 +13,9 @@ import PublicRecipeView from '../pages/recipes/PublicRecipeView.vue'
 import Collections from '../pages/Collections.vue'
 import CollectionView from '../pages/CollectionView.vue'
 import PublicCollections from '../pages/PublicCollections.vue'
+import MyStore from '../pages/stores/MyStore.vue'
+import BrowseStores from '../pages/stores/BrowseStores.vue'
+import OrderTracking from '../pages/orders/OrderTracking.vue'
 
 
 const routes = [
@@ -98,6 +101,24 @@ const routes = [
     name: 'PublicCollections',
     component: PublicCollections,
     meta: { requiresAuth: false }
+  },
+  {
+    path: '/my-store',
+    name: 'MyStore',
+    component: MyStore,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/stores',
+    name: 'BrowseStores',
+    component: BrowseStores,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/orders',
+    name: 'OrderTracking',
+    component: OrderTracking,
+    meta: { requiresAuth: true }
   },
 ]
 

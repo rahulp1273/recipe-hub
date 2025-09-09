@@ -1,10 +1,12 @@
 import axios from 'axios'
 
-// Set base URL for API calls
-// In development (web), use relative URLs
-// In production (mobile), use the full URL
+// Check if it's mobile or web
 const isMobile = window.Capacitor && window.Capacitor.isNativePlatform()
-const baseURL = isMobile ? 'http://10.0.2.2:8001' : ''
+
+// For mobile, use local dev IP; for web, use APP_URL from env
+const baseURL = isMobile
+  ? 'http://10.0.2.2:8001'
+  : import.meta.env.VITE_APP_URL // <-- use the env variable here
 
 axios.defaults.baseURL = baseURL
 
@@ -21,12 +23,10 @@ axios.interceptors.request.use(
     }
     return config
   },
-  (error) => {
-    return Promise.reject(error)
-  }
+  (error) => Promise.reject(error)
 )
 
-// Handle 401 responses globally
+// Handle 401 globally
 axios.interceptors.response.use(
   (response) => response,
   (error) => {

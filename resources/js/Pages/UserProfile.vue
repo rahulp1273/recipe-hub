@@ -212,7 +212,7 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import axios from 'axios'
-import ChangePasswordModal from '@/Components/modals/ChangePasswordModal.vue'
+import ChangePasswordModal from '@/components/modals/ChangePasswordModal.vue'
 
 const router = useRouter()
 

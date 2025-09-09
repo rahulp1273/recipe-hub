@@ -266,7 +266,7 @@ const isLoading = ref(false)
 const error = ref('')
 const success = ref('')
 
-// Add/Remove ingredients
+// Add/Remove ingredients and instructions
 const addIngredient = () => {
   form.value.ingredients.push('')
 }

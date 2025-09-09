@@ -2,19 +2,13 @@
 
 use Illuminate\Support\Facades\Route;
 
-// API routes are in routes/api.php (Laravel default)
+// API routes (default Laravel)
 require __DIR__.'/api.php';
 
-// Named routes for Vue SPA pages (optional, but useful)
-Route::get('/login', function () {
-    return view('welcome'); // let Vue handle login page
-})->name('login');
+// Public routes handled by Vue
+Route::view('/', 'welcome')->name('home');          // Home page (landing page)
+Route::view('/login', 'welcome')->name('login');    // Login page
+Route::view('/register', 'welcome')->name('register'); // Register page
 
-Route::get('/register', function () {
-    return view('welcome'); // let Vue handle register page
-})->name('register');
-
-// Catch-all route for all other Vue SPA routes
-Route::get('/{any}', function () {
-    return view('welcome'); // let Vue handle all front-end routing
-})->where('any', '^(?!api).*$');
+// Catch-all route for Vue SPA
+Route::view('/{any}', 'welcome')->where('any', '^(?!api).*$');

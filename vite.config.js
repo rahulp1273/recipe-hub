@@ -1,16 +1,24 @@
 import { defineConfig } from 'vite';
 import vue from '@vitejs/plugin-vue';
+import laravel from 'laravel-vite-plugin';
 import { resolve } from 'path';
 
 export default defineConfig({
-    base: './',
     plugins: [
+        laravel({
+            input: ['resources/css/app.css', 'resources/js/app.js'],
+            refresh: true, // Blade file changes pe HMR
+        }),
         vue(),
     ],
     resolve: {
         alias: {
             '@': resolve(__dirname, 'resources/js'),
         },
+    },
+    build: {
+        outDir: 'public/build',
+        emptyOutDir: true,
     },
     server: {
         proxy: {
@@ -19,13 +27,6 @@ export default defineConfig({
                 changeOrigin: true,
                 secure: false,
             },
-        },
-    },
-    build: {
-        outDir: 'public/build',
-        emptyOutDir: true,
-        rollupOptions: {
-            input: 'resources/js/app.js',
         },
     },
 });

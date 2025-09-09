@@ -22,10 +22,10 @@ export default defineConfig({
         },
     },
     build: {
-        outDir: 'dist',
+        outDir: 'public/build',
         emptyOutDir: true,
         rollupOptions: {
-            input: resolve(__dirname, 'index.html'),
+            input: 'resources/js/app.js',
         },
     },
 });

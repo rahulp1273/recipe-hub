@@ -6,6 +6,6 @@ use Illuminate\Support\Facades\Route;
 require __DIR__.'/api.php';
 
 // Catch-all route for Vue SPA
-Route::get('/{any}', function () {
-    return view('welcome');
-})->where('any', '^(?!api).*$');
+Route::get('/login', function () {
+    return view('welcome'); // let Vue handle the login page
+})->name('login');

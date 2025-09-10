@@ -9,7 +9,7 @@
                         <div class="w-10 h-10 bg-white rounded-lg flex items-center justify-center shadow-md">
                             <span class="text-orange-500 text-xl font-bold">🍳</span>
                         </div>
-                        <h1 class="text-2xl font-bold text-white">RecipeHub - My Store</h1>
+                        <h2 class="text-small font-semibold text-white">My Store</h2>
                         <router-link to="/dashboard" class="text-white hover:text-orange-200 font-medium transition-colors px-3 py-2 rounded-lg hover:bg-white hover:bg-opacity-10">
                             Dashboard
                         </router-link>

@@ -10,16 +10,16 @@
                             <span class="text-orange-500 text-xl font-bold">🍳</span>
                         </div>
                         <h1 class="text-2xl font-bold text-white">RecipeHub - My Store</h1>
-                    </div>
-
-                    <!-- Navigation Links -->
-                    <div class="hidden md:flex items-center space-x-8">
                         <router-link to="/dashboard" class="text-white hover:text-orange-200 font-medium transition-colors px-3 py-2 rounded-lg hover:bg-white hover:bg-opacity-10">
                             Dashboard
                         </router-link>
                         <router-link to="/stores" class="text-white hover:text-orange-200 font-medium transition-colors px-3 py-2 rounded-lg hover:bg-white hover:bg-opacity-10">
                             Browse Stores
                         </router-link>
+                    </div>
+
+                    <!-- Navigation Links -->
+                    <div class="hidden md:flex items-center space-x-8">
                         <button @click="logout" class="text-white hover:text-orange-200 font-medium transition-colors px-3 py-2 rounded-lg hover:bg-white hover:bg-opacity-10">
                             Logout
                         </button>

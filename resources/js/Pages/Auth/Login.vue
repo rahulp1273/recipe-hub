@@ -94,7 +94,7 @@ const login = async () => {
   error.value = ''
 
   try {
-    console.log('Attempting login with:', form.value)
+    console.log('Attempting login with:', { email: form.value.email })
 
     const response = await axios.post('/api/login', {
       email: form.value.email,

@@ -94,8 +94,6 @@ const login = async () => {
   error.value = ''
 
   try {
-    console.log('Attempting login with:', { email: form.value.email })
-
     const response = await axios.post('/api/login', {
       email: form.value.email,
       password: form.value.password
@@ -106,14 +104,19 @@ const login = async () => {
       }
     })
 
-    console.log('Login Response:', response.data)
+    const data = response.data
 
-    const token = response.data.token
-    localStorage.setItem('auth_token', token)
+    if (data.requires_otp) {
+      localStorage.setItem('pending_otp', JSON.stringify({
+        email: form.value.email,
+        type: 'login'
+      }))
 
-    console.log('Token Saved:', localStorage.getItem('auth_token'))
-
-    router.push('/dashboard')
+      router.push({ name: 'VerifyOtp' })
+    } else if (data.token) {
+      localStorage.setItem('auth_token', data.token)
+      router.push('/dashboard')
+    }
 
   } catch (err) {
     console.error('Login error:', err)

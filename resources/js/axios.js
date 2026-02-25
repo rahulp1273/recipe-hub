@@ -6,7 +6,7 @@ const isMobile = window.Capacitor && window.Capacitor.isNativePlatform()
 // Base URL
 const baseURL = isMobile
   ? 'http://10.0.2.2:8001'
-  : import.meta.env.VITE_APP_URL
+  : window.location.origin
 
 axios.defaults.baseURL = baseURL
 axios.defaults.headers.common['Accept'] = 'application/json'

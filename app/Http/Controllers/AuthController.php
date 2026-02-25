@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Services\OtpService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
@@ -10,6 +11,13 @@ use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
 {
+    protected OtpService $otpService;
+
+    public function __construct(OtpService $otpService)
+    {
+        $this->otpService = $otpService;
+    }
+
     // Register new user
     public function register(Request $request)
     {
@@ -25,13 +33,14 @@ class AuthController extends Controller
             'password' => Hash::make($request->password),
         ]);
 
-        $token = $user->createToken('auth_token')->plainTextToken;
+        $this->otpService->requestForRegistration($user);
 
         return response()->json([
             'success' => true,
-            'message' => 'User registered successfully',
-            'user' => $user,
-            'token' => $token,
+            'message' => 'User registered successfully. Please verify the OTP sent to your email.',
+            'requires_otp' => true,
+            'email' => $user->email,
+            'type' => 'register',
         ], 201);
     }
 
@@ -50,13 +59,15 @@ class AuthController extends Controller
         }
 
         $user = User::where('email', $request->email)->first();
-        $token = $user->createToken('auth_token')->plainTextToken;
+
+        $this->otpService->requestForLogin($user);
 
         return response()->json([
             'success' => true,
-            'message' => 'Login successful',
-            'user' => $user,
-            'token' => $token,
+            'message' => 'Login successful. Please verify the OTP sent to your email.',
+            'requires_otp' => true,
+            'email' => $user->email,
+            'type' => 'login',
         ]);
     }
 

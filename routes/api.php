@@ -3,6 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\OtpController;
 use App\Http\Controllers\Api\RecipeController;
 use App\Http\Controllers\Api\UserProfileController;
 use App\Http\Controllers\Api\SocialController;
@@ -34,6 +35,8 @@ Route::get('/ai/test', function () {
 // Auth routes
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
+Route::post('/verify-otp', [OtpController::class, 'verify']);
+Route::post('/resend-otp', [OtpController::class, 'resend']);
 
 // Public social routes (anyone can access)
 Route::get('/feed', [SocialController::class, 'getFeed']);                     // Public recipe feed

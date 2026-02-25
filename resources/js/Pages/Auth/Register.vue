@@ -118,12 +118,19 @@ const handleRegister = async () => {
 
   try {
     const response = await axios.post('/api/register', form.value)
+    const data = response.data
 
-    // Store token
-    localStorage.setItem('token', response.data.token)
+    if (data.requires_otp) {
+      localStorage.setItem('pending_otp', JSON.stringify({
+        email: form.value.email,
+        type: 'register'
+      }))
 
-    // Redirect to dashboard
-    router.push('/dashboard')
+      router.push({ name: 'VerifyOtp' })
+    } else if (data.token) {
+      localStorage.setItem('auth_token', data.token)
+      router.push('/dashboard')
+    }
 
   } catch (err) {
     error.value = err.response?.data?.message || 'Registration failed'

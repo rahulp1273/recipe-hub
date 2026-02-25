@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import Home from "../Pages/Home.vue";
 import Login from '../Pages/Auth/Login.vue';
 import Register from '../Pages/Auth/Register.vue';
+import VerifyOtp from '../Pages/Auth/VerifyOtp.vue';
 import Dashboard from '../Pages/Dashboard.vue';
 import CreateRecipe from '../Pages/recipes/CreateRecipe.vue';
 import RecipeList from '../Pages/recipes/RecipeList.vue';
@@ -35,6 +36,12 @@ const routes = [
     path: '/register',
     name: 'Register',
     component: Register,
+    meta: { requiresAuth: false }
+  },
+  {
+    path: '/verify-otp',
+    name: 'VerifyOtp',
+    component: VerifyOtp,
     meta: { requiresAuth: false }
   },
   {

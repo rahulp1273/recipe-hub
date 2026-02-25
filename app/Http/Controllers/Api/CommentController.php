@@ -3,24 +3,25 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\Recipe;
-use App\Models\RecipeComment;
+use App\Services\CommentService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class CommentController extends Controller
 {
+    protected CommentService $commentService;
+
+    public function __construct(CommentService $commentService)
+    {
+        $this->commentService = $commentService;
+    }
+
     /**
      * Get all comments for a recipe
      */
     public function index($recipeId)
     {
-        $recipe = Recipe::findOrFail($recipeId);
-        
-        $comments = $recipe->comments()
-            ->with('user:id,name,avatar_path')
-            ->orderBy('created_at', 'desc')
-            ->get();
+        $comments = $this->commentService->getRecipeComments($recipeId);
 
         return response()->json([
             'success' => true,
@@ -33,41 +34,26 @@ class CommentController extends Controller
      */
     public function store(Request $request, $recipeId)
     {
-        $request->validate([
+        $validated = $request->validate([
             'comment' => 'required|string|max:1000',
             'rating' => 'nullable|integer|min:1|max:5'
         ]);
 
-        $recipe = Recipe::findOrFail($recipeId);
-        $user = Auth::user();
+        try {
+            $comment = $this->commentService->addComment($recipeId, Auth::user(), $validated);
 
-        // Check if user already commented on this recipe
-        $existingComment = RecipeComment::where('user_id', $user->id)
-            ->where('recipe_id', $recipeId)
-            ->first();
-
-        if ($existingComment) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Comment added successfully',
+                'data' => $comment
+            ], 201);
+        } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'You have already commented on this recipe'
+                'message' => $e->getMessage(),
+                'errors' => $e->errors()
             ], 400);
         }
-
-        $comment = RecipeComment::create([
-            'user_id' => $user->id,
-            'recipe_id' => $recipeId,
-            'comment' => $request->comment,
-            'rating' => $request->rating
-        ]);
-
-        // Load the user relationship for the response
-        $comment->load('user:id,name,avatar_path');
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Comment added successfully',
-            'data' => $comment
-        ], 201);
     }
 
     /**
@@ -75,22 +61,12 @@ class CommentController extends Controller
      */
     public function update(Request $request, $recipeId, $commentId)
     {
-        $request->validate([
+        $validated = $request->validate([
             'comment' => 'required|string|max:1000',
             'rating' => 'nullable|integer|min:1|max:5'
         ]);
 
-        $comment = RecipeComment::where('id', $commentId)
-            ->where('recipe_id', $recipeId)
-            ->where('user_id', Auth::id())
-            ->firstOrFail();
-
-        $comment->update([
-            'comment' => $request->comment,
-            'rating' => $request->rating
-        ]);
-
-        $comment->load('user:id,name,avatar_path');
+        $comment = $this->commentService->updateComment($commentId, $recipeId, Auth::id(), $validated);
 
         return response()->json([
             'success' => true,
@@ -104,12 +80,7 @@ class CommentController extends Controller
      */
     public function destroy($recipeId, $commentId)
     {
-        $comment = RecipeComment::where('id', $commentId)
-            ->where('recipe_id', $recipeId)
-            ->where('user_id', Auth::id())
-            ->firstOrFail();
-
-        $comment->delete();
+        $this->commentService->deleteComment($commentId, $recipeId, Auth::id());
 
         return response()->json([
             'success' => true,

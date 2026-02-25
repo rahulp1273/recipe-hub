@@ -27,7 +27,8 @@ class Recipe extends Model
         'likes_count',
         'views_count',
         'image',
-        'is_ai_generated'
+        'is_ai_generated',
+        'is_vegetarian'
     ];
 
     protected $casts = [

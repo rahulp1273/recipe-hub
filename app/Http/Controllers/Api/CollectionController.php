@@ -3,26 +3,25 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\RecipeCollection;
-use App\Models\Recipe;
+use App\Services\CollectionService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class CollectionController extends Controller
 {
+    protected CollectionService $collectionService;
+
+    public function __construct(CollectionService $collectionService)
+    {
+        $this->collectionService = $collectionService;
+    }
+
     /**
      * Get all collections for the authenticated user
      */
     public function index()
     {
-        $collections = RecipeCollection::where('user_id', Auth::id())
-            ->with(['recipes'])
-            ->orderBy('created_at', 'desc')
-            ->get()
-            ->map(function ($collection) {
-                $collection->recipes_count = $collection->recipes->count();
-                return $collection;
-            });
+        $collections = $this->collectionService->getUserCollections(Auth::id());
 
         return response()->json([
             'success' => true,
@@ -35,11 +34,7 @@ class CollectionController extends Controller
      */
     public function show($id)
     {
-        $collection = RecipeCollection::where('user_id', Auth::id())
-            ->with(['recipes.user', 'recipes.comments'])
-            ->findOrFail($id);
-
-        $collection->recipes_count = $collection->recipes->count();
+        $collection = $this->collectionService->getCollectionDetails($id, Auth::id());
 
         return response()->json([
             'success' => true,
@@ -60,16 +55,7 @@ class CollectionController extends Controller
             'icon' => 'nullable|string|max:10'
         ]);
 
-        $collection = RecipeCollection::create([
-            'user_id' => Auth::id(),
-            'name' => $validated['name'],
-            'description' => $validated['description'],
-            'is_public' => $validated['is_public'] ?? false,
-            'color' => $validated['color'] ?? '#FF6B35',
-            'icon' => $validated['icon'] ?? '📁'
-        ]);
-
-        $collection->recipes_count = 0;
+        $collection = $this->collectionService->createCollection(Auth::id(), $validated);
 
         return response()->json([
             'success' => true,
@@ -83,8 +69,6 @@ class CollectionController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $collection = RecipeCollection::where('user_id', Auth::id())->findOrFail($id);
-
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string|max:1000',
@@ -93,9 +77,7 @@ class CollectionController extends Controller
             'icon' => 'nullable|string|max:10'
         ]);
 
-        $collection->update($validated);
-
-        $collection->recipes_count = $collection->recipes()->count();
+        $collection = $this->collectionService->updateCollection($id, Auth::id(), $validated);
 
         return response()->json([
             'success' => true,
@@ -109,8 +91,7 @@ class CollectionController extends Controller
      */
     public function destroy($id)
     {
-        $collection = RecipeCollection::where('user_id', Auth::id())->findOrFail($id);
-        $collection->delete();
+        $this->collectionService->deleteCollection($id, Auth::id());
 
         return response()->json([
             'success' => true,
@@ -127,22 +108,19 @@ class CollectionController extends Controller
             'recipe_id' => 'required|exists:recipes,id'
         ]);
 
-        $collection = RecipeCollection::where('user_id', Auth::id())->findOrFail($collectionId);
-        
-        // Check if recipe is already in collection
-        if ($collection->recipes()->where('recipe_id', $request->recipe_id)->exists()) {
+        try {
+            $this->collectionService->addRecipeToCollection($collectionId, $request->recipe_id, Auth::id());
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Recipe added to collection successfully!'
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Recipe is already in this collection'
+                'message' => $e->getMessage()
             ], 400);
         }
-
-        $collection->recipes()->attach($request->recipe_id);
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Recipe added to collection successfully!'
-        ]);
     }
 
     /**
@@ -154,8 +132,7 @@ class CollectionController extends Controller
             'recipe_id' => 'required|exists:recipes,id'
         ]);
 
-        $collection = RecipeCollection::where('user_id', Auth::id())->findOrFail($collectionId);
-        $collection->recipes()->detach($request->recipe_id);
+        $this->collectionService->removeRecipeFromCollection($collectionId, $request->recipe_id, Auth::id());
 
         return response()->json([
             'success' => true,
@@ -168,16 +145,7 @@ class CollectionController extends Controller
      */
     public function publicCollections()
     {
-        $collections = RecipeCollection::where('is_public', true)
-            ->with(['user:id,name', 'recipes'])
-            ->orderBy('created_at', 'desc')
-            ->paginate(12);
-
-        // Add recipes_count to each collection
-        $collections->getCollection()->transform(function ($collection) {
-            $collection->recipes_count = $collection->recipes->count();
-            return $collection;
-        });
+        $collections = $this->collectionService->getPublicCollections();
 
         return response()->json([
             'success' => true,

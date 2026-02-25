@@ -22,19 +22,17 @@ class OtpController extends Controller
             'type' => 'required|in:register,login',
         ]);
 
-        $user = $this->otpService->verify(
+        $result = $this->otpService->verifyAndAuthenticate(
             $validated['email'],
             $validated['otp'],
             $validated['type'],
         );
 
-        $token = $user->createToken('auth_token')->plainTextToken;
-
         return response()->json([
             'success' => true,
             'message' => 'OTP verified successfully.',
-            'user' => $user,
-            'token' => $token,
+            'user' => $result['user'],
+            'token' => $result['token'],
         ]);
     }
 

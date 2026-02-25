@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Services\AuthService;
 use App\Services\OtpService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -11,29 +12,23 @@ use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
 {
-    protected OtpService $otpService;
+    protected AuthService $authService;
 
-    public function __construct(OtpService $otpService)
+    public function __construct(AuthService $authService)
     {
-        $this->otpService = $otpService;
+        $this->authService = $authService;
     }
 
     // Register new user
     public function register(Request $request)
     {
-        $request->validate([
+        $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:8|confirmed',
         ]);
 
-        $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-        ]);
-
-        $this->otpService->requestForRegistration($user);
+        $user = $this->authService->register($validated);
 
         return response()->json([
             'success' => true,
@@ -47,20 +42,12 @@ class AuthController extends Controller
     // Login user
     public function login(Request $request)
     {
-        $request->validate([
+        $validated = $request->validate([
             'email' => 'required|email',
             'password' => 'required',
         ]);
 
-        if (!Auth::attempt($request->only('email', 'password'))) {
-            throw ValidationException::withMessages([
-                'email' => ['The provided credentials are incorrect.'],
-            ]);
-        }
-
-        $user = User::where('email', $request->email)->first();
-
-        $this->otpService->requestForLogin($user);
+        $user = $this->authService->login($validated);
 
         return response()->json([
             'success' => true,
@@ -74,7 +61,7 @@ class AuthController extends Controller
     // Logout user
     public function logout(Request $request)
     {
-        $request->user()->currentAccessToken()->delete();
+        $this->authService->logout($request->user());
 
         return response()->json([
             'success' => true,

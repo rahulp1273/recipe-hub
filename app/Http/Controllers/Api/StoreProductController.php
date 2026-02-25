@@ -3,30 +3,26 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\Store;
-use App\Models\StoreProduct;
-use App\Models\Recipe;
+use App\Services\StoreProductService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 
 class StoreProductController extends Controller
 {
+    protected StoreProductService $storeProductService;
+
+    public function __construct(StoreProductService $storeProductService)
+    {
+        $this->storeProductService = $storeProductService;
+    }
+
     /**
      * Display a listing of store products
      */
     public function index(Request $request)
     {
-        $storeId = $request->input('store_id');
-        
-        $query = StoreProduct::with(['store.user', 'recipe'])
-            ->where('is_available', true);
-
-        if ($storeId) {
-            $query->where('store_id', $storeId);
-        }
-
-        $products = $query->get();
+        $products = $this->storeProductService->getAvailableProducts($request->input('store_id'));
 
         return response()->json([
             'success' => true,
@@ -55,53 +51,21 @@ class StoreProductController extends Controller
             ], 422);
         }
 
-        // Check if user has a store
-        $store = Store::where('user_id', Auth::id())->first();
-        if (!$store) {
+        try {
+            $product = $this->storeProductService->addProduct(Auth::id(), $request->all());
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Product added to store successfully',
+                'data' => $product->load(['store', 'recipe'])
+            ], 201);
+        } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'You need to create a store first'
+                'message' => $e->getMessage(),
+                'errors' => $e->errors()
             ], 400);
         }
-
-        // Check if recipe belongs to the user
-        $recipe = Recipe::where('id', $request->recipe_id)
-            ->where('user_id', Auth::id())
-            ->first();
-
-        if (!$recipe) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Recipe not found or you do not own this recipe'
-            ], 404);
-        }
-
-        // Check if this recipe is already a product in this store
-        $existingProduct = StoreProduct::where('store_id', $store->id)
-            ->where('recipe_id', $request->recipe_id)
-            ->first();
-
-        if ($existingProduct) {
-            return response()->json([
-                'success' => false,
-                'message' => 'This recipe is already added to your store'
-            ], 400);
-        }
-
-        $product = StoreProduct::create([
-            'store_id' => $store->id,
-            'recipe_id' => $request->recipe_id,
-            'price' => $request->price,
-            'quantity_available' => $request->quantity_available,
-            'description' => $request->description,
-            'preparation_time' => $request->preparation_time
-        ]);
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Product added to store successfully',
-            'data' => $product->load(['store', 'recipe'])
-        ], 201);
     }
 
     /**
@@ -109,9 +73,7 @@ class StoreProductController extends Controller
      */
     public function show(string $id)
     {
-        $product = StoreProduct::with(['store.user', 'recipe'])
-            ->where('is_available', true)
-            ->findOrFail($id);
+        $product = $this->storeProductService->getProductDetails($id);
 
         return response()->json([
             'success' => true,
@@ -124,10 +86,6 @@ class StoreProductController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        $product = StoreProduct::whereHas('store', function($query) {
-            $query->where('user_id', Auth::id());
-        })->findOrFail($id);
-
         $validator = Validator::make($request->all(), [
             'price' => 'sometimes|required|numeric|min:0.01',
             'quantity_available' => 'sometimes|required|integer|min:0',
@@ -144,15 +102,12 @@ class StoreProductController extends Controller
             ], 422);
         }
 
-        $product->update($request->only([
-            'price', 'quantity_available', 'description', 
-            'preparation_time', 'is_available'
-        ]));
+        $product = $this->storeProductService->updateProduct($id, Auth::id(), $request->all());
 
         return response()->json([
             'success' => true,
             'message' => 'Product updated successfully',
-            'data' => $product->load(['store', 'recipe'])
+            'data' => $product
         ]);
     }
 
@@ -161,11 +116,7 @@ class StoreProductController extends Controller
      */
     public function destroy(string $id)
     {
-        $product = StoreProduct::whereHas('store', function($query) {
-            $query->where('user_id', Auth::id());
-        })->findOrFail($id);
-
-        $product->delete();
+        $this->storeProductService->deleteProduct($id, Auth::id());
 
         return response()->json([
             'success' => true,
@@ -178,23 +129,18 @@ class StoreProductController extends Controller
      */
     public function myProducts()
     {
-        $store = Store::where('user_id', Auth::id())->first();
-        
-        if (!$store) {
+        try {
+            $products = $this->storeProductService->getUserProducts(Auth::id());
+
+            return response()->json([
+                'success' => true,
+                'data' => $products
+            ]);
+        } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'No store found'
             ], 404);
         }
-
-        $products = $store->products()
-            ->with('recipe')
-            ->orderBy('created_at', 'desc')
-            ->get();
-
-        return response()->json([
-            'success' => true,
-            'data' => $products
-        ]);
     }
 }

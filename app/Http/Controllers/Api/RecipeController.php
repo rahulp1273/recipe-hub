@@ -4,21 +4,26 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Recipe;
+use App\Services\RecipeService;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Str;
 
 class RecipeController extends Controller
 {
+    protected RecipeService $recipeService;
+
+    public function __construct(RecipeService $recipeService)
+    {
+        $this->recipeService = $recipeService;
+    }
+
     /**
      * Display a listing of recipes
      */
     public function index(): JsonResponse
     {
-        $recipes = Recipe::with('user')
-            ->latest()
-            ->paginate(12);
+        $recipes = $this->recipeService->getAllRecipes();
 
         return response()->json([
             'success' => true,
@@ -45,26 +50,7 @@ class RecipeController extends Controller
             'image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
         ]);
 
-        $imagePath = null;
-        if ($request->hasFile('image')) {
-            $file = $request->file('image');
-            $filename = 'recipe_' . Auth::id() . '_' . time() . '.' . $file->getClientOriginalExtension();
-            $imagePath = $file->storeAs('recipes', $filename, 'public');
-        }
-
-        $recipe = Recipe::create([
-            'user_id' => Auth::id(),
-            'title' => $validated['title'],
-            'slug' => Str::slug($validated['title']),
-            'description' => $validated['description'],
-            'category' => $validated['category'],
-            'prep_time' => $validated['prep_time'] ?? 0,
-            'cook_time' => $validated['cook_time'] ?? 0,
-            'servings' => $validated['servings'] ?? 1,
-            'ingredients' => $validated['ingredients'],
-            'instructions' => $validated['instructions'],
-            'image' => $imagePath,
-        ]);
+        $recipe = $this->recipeService->createRecipe($validated, $request->file('image'));
 
         return response()->json([
             'success' => true,
@@ -78,14 +64,7 @@ class RecipeController extends Controller
      */
     public function show(Recipe $recipe): JsonResponse
     {
-        $recipe->load('user');
-        
-        // Add comments count and average rating
-        $recipe->comments_count = $recipe->comments()->count();
-        $recipe->average_rating = $recipe->comments()->whereNotNull('rating')->avg('rating') ?? 0;
-        
-        // Check if current user has liked this recipe
-        $recipe->is_liked = $recipe->isLikedBy(Auth::user());
+        $recipe = $this->recipeService->getRecipeDetails($recipe, Auth::user());
 
         return response()->json([
             'success' => true,
@@ -121,33 +100,12 @@ class RecipeController extends Controller
             'delete_image' => 'sometimes|boolean',
         ]);
 
-        // Handle image deletion or update
-        $imagePath = $recipe->image;
-        if ($request->has('delete_image') && $request->boolean('delete_image')) {
-            if ($recipe->image) {
-                \Storage::disk('public')->delete($recipe->image);
-                $imagePath = null;
-            }
-        } elseif ($request->hasFile('image')) {
-            if ($recipe->image) {
-                \Storage::disk('public')->delete($recipe->image);
-            }
-            $file = $request->file('image');
-            $filename = 'recipe_' . Auth::id() . '_' . time() . '.' . $file->getClientOriginalExtension();
-            $imagePath = $file->storeAs('recipes', $filename, 'public');
-        }
-
-        $recipe->update([
-            'title' => $validated['title'],
-            'description' => $validated['description'],
-            'category' => $validated['category'],
-            'prep_time' => $validated['prep_time'],
-            'cook_time' => $validated['cook_time'],
-            'servings' => $validated['servings'],
-            'ingredients' => $validated['ingredients'],
-            'instructions' => $validated['instructions'],
-            'image' => $imagePath,
-        ]);
+        $recipe = $this->recipeService->updateRecipe(
+            $recipe, 
+            $validated, 
+            $request->file('image'), 
+            $request->boolean('delete_image')
+        );
 
         return response()->json([
             'success' => true,
@@ -169,7 +127,7 @@ class RecipeController extends Controller
             ], 403);
         }
 
-        $recipe->delete();
+        $this->recipeService->deleteRecipe($recipe);
 
         return response()->json([
             'success' => true,
@@ -182,9 +140,7 @@ class RecipeController extends Controller
      */
     public function myRecipes(): JsonResponse
     {
-        $recipes = Recipe::where('user_id', Auth::id())
-            ->latest()
-            ->paginate(12);
+        $recipes = $this->recipeService->getUserRecipes(Auth::id());
 
         return response()->json([
             'success' => true,

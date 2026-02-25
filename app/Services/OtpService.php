@@ -41,6 +41,17 @@ class OtpService
         $this->generateAndSend($email, $type, $user->id);
     }
 
+    public function verifyAndAuthenticate(string $email, string $otp, string $type): array
+    {
+        $user = $this->verify($email, $otp, $type);
+        $token = $user->createToken('auth_token')->plainTextToken;
+
+        return [
+            'user' => $user,
+            'token' => $token,
+        ];
+    }
+
     public function verify(string $email, string $otp, string $type): User
     {
         /** @var OtpVerification|null $record */

@@ -1,57 +1,72 @@
 # 🍳 RecipeHub
 
-A modern recipe sharing platform where users can create, share, and discover amazing recipes.
+A modern recipe, collection, and food-store platform where users can create, share, and discover recipes, organize them into collections, sell ready‑to‑cook dishes, and order from nearby stores.
 
-## ✨ Features
+## ✨ Key Features
 
-- 🔐 **User Authentication** - Secure login/register
-- 📝 **Recipe Management** - Create, edit, delete recipes
-- 🔍 **Recipe Discovery** - Browse and search recipes
-- 📱 **Responsive Design** - Works on all devices
-- 🎨 **Modern UI** - Clean and intuitive interface
+- 🔐 **OTP-based Authentication**  
+  Email OTP verification for both registration and login (Laravel Sanctum tokens issued after OTP).
+
+- 📝 **Recipe Management (CRUD)**  
+  Create, view, update, delete recipes with images, ingredients, instructions, categories, and timing.
+
+- 💬 **Social & Community**  
+  Public recipe feed, likes, views, comments with ratings, and basic stats per recipe.
+
+- 🗂️ **Collections**  
+  Create private/public collections, add/remove recipes, and browse public collections.
+
+- 🤖 **AI Recipe Generator**  
+  AI-assisted recipe generation (Hugging Face–ready, with graceful template fallback) integrated into the dashboard.
+
+- 🛒 **Stores & Orders**  
+  Turn recipes into products, manage a store, and handle customer orders with distance checks.
+
+- 👤 **Profile & Settings**  
+  Avatar upload/removal, profile fields (bio, location, phone), and password change.
+
+- 📱 **Responsive SPA UI**  
+  Vue 3 + Tailwind UI, router‑based navigation, and Axios with automatic token handling.
 
 ## 🛠️ Tech Stack
 
-- **Backend:** Laravel 10 (PHP)
-- **Frontend:** Vue.js 3 + Vite
+- **Backend:** Laravel 10 (PHP) + Sanctum
+- **Frontend:** Vue.js 3, Vite, Vue Router, Axios
 - **Database:** MySQL
 - **Styling:** Tailwind CSS
-- **Authentication:** Laravel Sanctum
 
-## 🚀 Quick Start
+## 🚀 Running the Project Locally
 
-**New developer?** → See [ONBOARDING.md](./ONBOARDING.md) for setup instructions.
+From the `recipe-hub` directory:
 
-## 📸 Screenshots
+```bash
+# 1. Install PHP & JS dependencies
+composer install
+npm install
 
-*Coming soon...*
+# 2. Set up environment
+cp .env.example .env
+php artisan key:generate
+php artisan migrate
 
-## 🎯 Roadmap
+# 3. Run backend (API + built SPA)
+php artisan serve --port=8000
 
-- [x] User Authentication
-- [x] Basic Recipe CRUD
-- [x] Image Upload
-- [x] Recipe Search & Filter
-- [ ] Rating System
-- [ ] Social Features
+# 4. (Optional) Run Vite dev server for hot reload
+npm run dev -- --port=8001
+```
+
+The SPA is available at `http://127.0.0.1:8000` (compiled assets) or `http://localhost:8001` when using the Vite dev server.
+
+## 📚 Further Docs
+
+- **Backend & CRUD overview:** [`Doc/recipe-project-doc.md`](./Doc/recipe-project-doc.md)  
+- **AI feature details:** [`Doc/AI.md`](./Doc/AI.md)
 
 ## 👥 Team
 
-- **[Rahul Panwar]** - Project Lead & Full Stack Developer
+- **Rahul Panwar** – Project Lead & Full Stack Developer
 
 ## 📄 License
 
 This project is private and proprietary.
-
----
-
-**For development setup, check [ONBOARDING.md](./ONBOARDING.md)**
-```
-
-Repository name: RecipeHub
-Description: 🍳 Modern recipe sharing platform - Laravel & Vue.js
-Visibility: ✅ Private
-Initialize with README: ✅ Yes
-Add .gitignore: ✅ Laravel
-Add license: ❌ None (for private)
-```

@@ -2,12 +2,12 @@
 
 ## 📋 Overview
 
-The AI Recipe Generator is a feature that allows registered users to generate complete recipes using artificial intelligence. Users can describe what they want to cook, and the system will create a full recipe with ingredients, instructions, cooking times, and serving information.
+The AI Recipe Generator is a feature that allows authenticated RecipeHub users to generate complete recipes using artificial intelligence. Users describe what they want to cook, and the system creates a full recipe with ingredients, instructions, cooking times, and serving information.
 
 ## 🎯 Features Implemented
 
 ### ✅ Core Functionality
-- **Text-based recipe generation** from user prompts
+- **Text-based recipe generation** from user prompts (Hugging Face when configured, otherwise smart templates)
 - **Quick prompt suggestions** for common recipe types
 - **Real-time generation** with loading states
 - **Recipe storage** in database with AI flag
@@ -26,11 +26,11 @@ The AI Recipe Generator is a feature that allows registered users to generate co
 
 ### Backend (Laravel)
 ```
-app/Http/Controllers/AiRecipeController.php  # Main AI controller
-app/Models/Recipe.php                        # Updated with AI flag
-database/migrations/xxx_add_is_ai_generated  # Database migration
-routes/api.php                               # API routes
-config/services.php                          # AI service config
+app/Http/Controllers/Api/AiRecipeController.php  # Main AI controller
+app/Models/Recipe.php                            # Updated with AI flag + slug
+database/migrations/*_add_is_ai_generated.php    # Database migration
+routes/api.php                                   # API routes
+config/services.php                              # AI service config (Hugging Face)
 ```
 
 ### Frontend (Vue.js)
@@ -126,60 +126,34 @@ Authorization: Bearer {token}
 
 ### 1. Controller Logic (AiRecipeController.php)
 
-```php
-class AiRecipeController extends Controller
-{
-    public function generateRecipe(Request $request): JsonResponse
-    {
-        // Validate user input
-        $validated = $request->validate([
-            'prompt' => 'required|string|max:500',
-        ]);
+High‑level flow in `generateRecipe()`:
 
-        // Generate recipe data (currently using templates)
-        $recipeData = $this->generateRecipeFromPrompt($validated['prompt']);
+1. Validate input prompt (`required|string|max:500`).
+2. Call `generateRecipeFromPrompt($prompt)`:
+   - If `HUGGINGFACE_API_KEY` is configured:
+     - Build a detailed natural‑language prompt.
+     - Call the Hugging Face inference API.
+     - Parse and extract structured recipe data (title, description, category, timings, ingredients, instructions).
+   - If the API call fails or no key is present:
+     - Fall back to curated templates based on prompt keywords (chicken, pasta, etc.).
+3. Generate a **unique slug** for the recipe.
+4. Create a `Recipe` with `is_ai_generated = true` and all structured fields.
+5. Return the recipe (with `user` relation) in the JSON response.
 
-        // Save to database
-        $recipe = Recipe::create([
-            'user_id' => Auth::id(),
-            'title' => $recipeData['title'],
-            'ingredients' => $recipeData['ingredients'],
-            'instructions' => $recipeData['instructions'],
-            'is_ai_generated' => true,
-            // ... other fields
-        ]);
+### 2. Recipe Templates (Fallback Implementation)
 
-        return response()->json([
-            'success' => true,
-            'data' => $recipe->load('user')
-        ]);
-    }
-}
-```
+When Hugging Face is not available, the controller uses a set of curated templates:
 
-### 2. Recipe Templates (Current Implementation)
+- **Chicken/Curry** → “Simple Chicken Curry”
+- **Pasta/Noodles** → “Quick Garlic Pasta”
+- **Other prompts** → “Simple Stir Fry”
 
-**Template Types:**
-- **Cake/Dessert** - Chocolate cake recipe
-- **Pasta/Noodles** - Creamy garlic pasta
-- **Salad/Vegetables** - Fresh garden salad
-- **Default** - Pasta recipe
+Each template provides:
 
-**Template Structure:**
-```php
-$templates = [
-    'cake' => [
-        'title' => 'Classic Chocolate Cake',
-        'description' => 'A delicious homemade chocolate cake...',
-        'category' => 'dessert',
-        'prep_time' => 20,
-        'cook_time' => 35,
-        'servings' => 8,
-        'ingredients' => ['2 cups flour', '2 cups sugar', ...],
-        'instructions' => ['Preheat oven to 350°F', ...]
-    ]
-];
-```
+- Title & description
+- Category (usually `dinner`)
+- `prep_time`, `cook_time`, `servings`
+- `ingredients[]` and `instructions[]`
 
 ### 3. Frontend Integration
 
@@ -219,7 +193,7 @@ php artisan migrate
 ```
 
 ### 3. Configuration
-Add to `.env` file (for future AI integration):
+Add to `.env` file (optional, for real AI integration):
 ```env
 HUGGINGFACE_API_KEY=your_api_key_here
 ```
@@ -329,7 +303,7 @@ php artisan tinker
 ## 🔒 Security & Privacy
 
 ### Authentication
-- **JWT tokens** required for all AI endpoints
+- **Sanctum bearer tokens** (`auth_token`) required for all AI endpoints
 - **User ownership** - Users can only access their recipes
 - **Input validation** - Sanitize user prompts
 
@@ -401,6 +375,6 @@ private function generateRecipeFromPrompt(string $prompt): array
 
 ---
 
-**Last Updated:** August 4, 2025  
-**Version:** 1.0.0  
+**Last Updated:** February 25, 2026  
+**Version:** 1.1.0  
 **Status:** ✅ Production Ready

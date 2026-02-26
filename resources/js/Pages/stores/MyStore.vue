@@ -160,7 +160,7 @@
                                         <button @click="editProduct(product)" class="flex-1 bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-sm transition-colors">
                                             Edit
                                         </button>
-                                        <button @click="deleteProduct(product.id)" class="flex-1 bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-sm transition-colors">
+                                        <button @click="confirmDeleteProduct(product.id)" class="flex-1 bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-sm transition-colors">
                                             Remove
                                         </button>
                                     </div>
@@ -298,6 +298,24 @@
             @updated="handleStoreUpdated" 
         />
 
+        <!-- Edit Product Modal -->
+        <EditProductModal 
+            :show="showEditProductModal" 
+            :product="selectedProduct" 
+            @close="showEditProductModal = false; selectedProduct = null;" 
+            @updated="handleProductUpdated" 
+        />
+
+        <!-- Delete Confirmation Modal -->
+        <DeleteConfirmationModal 
+            :show="showDeleteConfirmModal" 
+            title="Remove Product"
+            message="Are you sure you want to remove this product from your store?"
+            :loading="isDeletingProduct"
+            @close="showDeleteConfirmModal = false; selectedProduct = null;" 
+            @confirm="handleDeleteProduct" 
+        />
+
         <!-- Add Product Modal -->
         <div v-if="showAddProductModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
             <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
@@ -365,6 +383,8 @@ import { ref, onMounted, computed } from "vue";
 import { useRouter } from "vue-router";
 import axios from "axios";
 import EditStoreModal from "@/components/store/EditStoreModal.vue";
+import EditProductModal from "@/components/store/EditProductModal.vue";
+import DeleteConfirmationModal from "@/components/common/DeleteConfirmationModal.vue";
 
 const router = useRouter();
 
@@ -379,6 +399,11 @@ const activeTab = ref('products');
 const showStoreModal = ref(false);
 const showAddProductModal = ref(false);
 const showEditStoreModal = ref(false);
+const showEditProductModal = ref(false);
+const showDeleteConfirmModal = ref(false);
+
+const selectedProduct = ref(null);
+const isDeletingProduct = ref(false);
 
 // Forms
 const storeForm = ref({
@@ -517,6 +542,40 @@ const toggleStoreStatus = async () => {
         console.error("Error toggling store status:", error);
         alert("Failed to change store status");
     }
+};
+
+const editProduct = (product) => {
+    selectedProduct.value = product;
+    showEditProductModal.value = true;
+};
+
+const confirmDeleteProduct = (productId) => {
+    selectedProduct.value = { id: productId };
+    showDeleteConfirmModal.value = true;
+};
+
+const handleDeleteProduct = async () => {
+    if (!selectedProduct.value?.id) return;
+    
+    isDeletingProduct.value = true;
+    try {
+        const response = await axios.delete(`/api/store-products/${selectedProduct.value.id}`);
+
+        if (response.data.success) {
+            showDeleteConfirmModal.value = false;
+            await fetchStoreProducts();
+        }
+    } catch (error) {
+        console.error("Error deleting product:", error);
+        alert(error.response?.data?.message || "Failed to delete product");
+    } finally {
+        isDeletingProduct.value = false;
+        selectedProduct.value = null;
+    }
+};
+
+const handleProductUpdated = async () => {
+    await fetchStoreProducts();
 };
 
 const openAddProductModal = async () => {

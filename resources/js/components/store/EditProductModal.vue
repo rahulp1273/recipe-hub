@@ -124,13 +124,11 @@ const handleUpdate = async () => {
     const response = await axios.put(`/api/store-products/${props.product.id}`, form.value);
 
     if (response.data.success) {
-      alert("Product updated successfully!");
       emit('updated');
       emit('close');
     }
   } catch (error) {
     console.error("Error updating product:", error);
-    alert(error.response?.data?.message || "Failed to update product");
   } finally {
     loading.value = false;
   }

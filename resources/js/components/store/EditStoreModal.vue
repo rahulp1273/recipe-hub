@@ -189,13 +189,13 @@ const handleUpdate = async () => {
     const response = await axios.put(`/api/stores/${props.store.id}`, form.value);
 
     if (response.data.success) {
-      alert("Store updated successfully!");
       emit('updated');
       emit('close');
     }
   } catch (error) {
     console.error("Error updating store:", error);
-    alert(error.response?.data?.message || "Failed to update store");
+    // Let parent handle errors too if needed, but for now we'll just keep it quiet 
+    // or we could emit an error event
   } finally {
     loading.value = false;
   }

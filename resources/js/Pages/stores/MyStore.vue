@@ -46,30 +46,30 @@
             <div v-else>
                 <!-- Store Info Card -->
                 <div class="bg-white rounded-2xl shadow-lg p-6 mb-8">
-                    <div class="flex items-center justify-between mb-6">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-6 mb-6">
                         <div class="flex items-center space-x-4">
-                            <div class="w-16 h-16 bg-gradient-to-br from-yellow-500 to-orange-500 rounded-2xl flex items-center justify-center">
+                            <div class="w-16 h-16 bg-gradient-to-br from-yellow-500 to-orange-500 rounded-2xl flex items-center justify-center shrink-0">
                                 <span class="text-3xl">🏪</span>
                             </div>
-                            <div>
-                                <h2 class="text-2xl font-bold text-gray-900">{{ myStore.name }}</h2>
-                                <p class="text-gray-600">{{ myStore.address }}</p>
-                                <div class="flex items-center space-x-4 mt-2">
-                                    <span class="text-sm text-gray-500">📞 {{ myStore.phone || 'No phone' }}</span>
-                                    <span class="text-sm text-gray-500">✉️ {{ myStore.email || 'No email' }}</span>
+                            <div class="min-w-0">
+                                <h2 class="text-2xl font-bold text-gray-900 truncate">{{ myStore.name }}</h2>
+                                <p class="text-gray-600 truncate">{{ myStore.address }}</p>
+                                <div class="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2">
+                                    <span class="text-sm text-gray-500 whitespace-nowrap">📞 {{ myStore.phone || 'No phone' }}</span>
+                                    <span class="text-sm text-gray-500 whitespace-nowrap">✉️ {{ myStore.email || 'No email' }}</span>
                                 </div>
                             </div>
                         </div>
-                        <div class="flex space-x-3">
-                            <button @click="showEditStoreModal = true" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+                        <div class="flex flex-row sm:flex-row gap-3 w-full sm:w-auto">
+                            <button @click="showEditStoreModal = true" class="flex-1 sm:flex-none bg-blue-500 hover:bg-blue-600 text-white px-4 py-2.5 rounded-xl text-sm font-medium transition-all shadow-sm active:scale-95">
                                 Edit Store
                             </button>
-                            <button @click="toggleStoreStatus" :class="myStore.is_active ? 'bg-red-500 hover:bg-red-600' : 'bg-green-500 hover:bg-green-600'" class="text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+                            <button @click="toggleStoreStatus" :class="myStore.is_active ? 'bg-red-500 hover:bg-red-600' : 'bg-green-500 hover:bg-green-600'" class="flex-1 sm:flex-none text-white px-4 py-2.5 rounded-xl text-sm font-medium transition-all shadow-sm active:scale-95">
                                 {{ myStore.is_active ? 'Close Store' : 'Open Store' }}
                             </button>
                         </div>
                     </div>
-                    <p v-if="myStore.description" class="text-gray-700">{{ myStore.description }}</p>
+                    <p v-if="myStore.description" class="text-gray-700 leading-relaxed">{{ myStore.description }}</p>
                 </div>
 
                 <!-- Stats Cards -->
@@ -127,10 +127,11 @@
                     <div class="p-6">
                         <!-- Products Tab -->
                         <div v-if="activeTab === 'products'">
-                            <div class="flex items-center justify-between mb-6">
+                            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
                                 <h3 class="text-xl font-bold text-gray-900">My Products</h3>
-                                <button @click="openAddProductModal" class="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white px-4 py-2 rounded-lg font-semibold transition-all duration-200">
-                                    Add Product
+                                <button @click="openAddProductModal" class="w-full sm:w-auto bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white px-6 py-2.5 rounded-xl font-semibold transition-all duration-200 shadow-md active:scale-95 flex items-center justify-center space-x-2">
+                                    <span>➕</span>
+                                    <span>Add Product</span>
                                 </button>
                             </div>
 
@@ -376,6 +377,14 @@
             </div>
         </div>
     </div>
+
+    <!-- Toast Notifications -->
+    <ToastNotification 
+        :show="toast.show" 
+        :message="toast.message" 
+        :type="toast.type" 
+        @close="toast.show = false" 
+    />
 </template>
 
 <script setup>
@@ -385,8 +394,24 @@ import axios from "axios";
 import EditStoreModal from "@/components/store/EditStoreModal.vue";
 import EditProductModal from "@/components/store/EditProductModal.vue";
 import DeleteConfirmationModal from "@/components/common/DeleteConfirmationModal.vue";
+import ToastNotification from "@/components/common/ToastNotification.vue";
 
 const router = useRouter();
+
+// Toast State
+const toast = ref({
+    show: false,
+    message: '',
+    type: 'success'
+});
+
+const showToast = (message, type = 'success') => {
+    toast.value = {
+        show: true,
+        message,
+        type
+    };
+};
 
 // Data
 const myStore = ref(null);
@@ -505,6 +530,7 @@ const closeStoreModal = () => {
 };
 
 const handleStoreUpdated = async () => {
+    showToast("Store details updated successfully!");
     await fetchMyStore();
 };
 
@@ -513,13 +539,13 @@ const createStore = async () => {
         const response = await axios.post("/api/stores", storeForm.value);
 
         if (response.data.success) {
-            alert("Store created successfully!");
+            showToast("Store created successfully!");
             closeStoreModal();
             await fetchMyStore();
         }
     } catch (error) {
         console.error("Error creating store:", error);
-        alert(error.response?.data?.message || "Failed to create store");
+        showToast(error.response?.data?.message || "Failed to create store", "error");
     }
 };
 
@@ -535,12 +561,12 @@ const toggleStoreStatus = async () => {
         });
 
         if (response.data.success) {
-            alert(`Store ${action === 'close' ? 'closed' : 'opened'} successfully!`);
+            showToast(`Store ${action === 'close' ? 'closed' : 'opened'} successfully!`);
             await fetchMyStore();
         }
     } catch (error) {
         console.error("Error toggling store status:", error);
-        alert("Failed to change store status");
+        showToast("Failed to change store status", "error");
     }
 };
 
@@ -562,12 +588,13 @@ const handleDeleteProduct = async () => {
         const response = await axios.delete(`/api/store-products/${selectedProduct.value.id}`);
 
         if (response.data.success) {
+            showToast("Product removed successfully!");
             showDeleteConfirmModal.value = false;
             await fetchStoreProducts();
         }
     } catch (error) {
         console.error("Error deleting product:", error);
-        alert(error.response?.data?.message || "Failed to delete product");
+        showToast(error.response?.data?.message || "Failed to delete product", "error");
     } finally {
         isDeletingProduct.value = false;
         selectedProduct.value = null;
@@ -575,6 +602,7 @@ const handleDeleteProduct = async () => {
 };
 
 const handleProductUpdated = async () => {
+    showToast("Product updated successfully!");
     await fetchStoreProducts();
 };
 
@@ -597,20 +625,20 @@ const closeAddProductModal = () => {
 const addProduct = async () => {
     try {
         if (!productForm.value.recipe_id) {
-            alert("Please select a recipe");
+            showToast("Please select a recipe", "error");
             return;
         }
 
         const response = await axios.post("/api/store-products", productForm.value);
 
         if (response.data.success) {
-            alert("Product added successfully!");
+            showToast("Product added successfully!");
             closeAddProductModal();
             await fetchStoreProducts();
         }
     } catch (error) {
         console.error("Error adding product:", error);
-        alert(error.response?.data?.message || "Failed to add product");
+        showToast(error.response?.data?.message || "Failed to add product", "error");
     }
 };
 
@@ -623,11 +651,11 @@ const getCurrentLocation = () => {
             },
             (error) => {
                 console.error("Error getting location:", error);
-                alert("Unable to get your location. Please enter it manually.");
+                showToast("Unable to get your location. Please enter it manually.", "error");
             }
         );
     } else {
-        alert("Geolocation is not supported by this browser.");
+        showToast("Geolocation is not supported by this browser.", "error");
     }
 };
 
@@ -648,10 +676,10 @@ const updateOrderStatus = async (order) => {
         await axios.put(`/api/orders/${order.id}`, {
             status: order.status
         });
-        alert("Order status updated!");
+        showToast("Order status updated!");
     } catch (error) {
         console.error("Error updating order:", error);
-        alert("Failed to update order status");
+        showToast("Failed to update order status", "error");
     }
 };
 

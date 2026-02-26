@@ -61,7 +61,7 @@
                             </div>
                         </div>
                         <div class="flex space-x-3">
-                            <button @click="openEditStoreModal" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+                            <button @click="showEditStoreModal = true" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
                                 Edit Store
                             </button>
                             <button @click="toggleStoreStatus" :class="myStore.is_active ? 'bg-red-500 hover:bg-red-600' : 'bg-green-500 hover:bg-green-600'" class="text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
@@ -290,6 +290,14 @@
             </div>
         </div>
 
+        <!-- Edit Store Modal -->
+        <EditStoreModal 
+            :show="showEditStoreModal" 
+            :store="myStore" 
+            @close="showEditStoreModal = false" 
+            @updated="handleStoreUpdated" 
+        />
+
         <!-- Add Product Modal -->
         <div v-if="showAddProductModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
             <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
@@ -356,6 +364,7 @@
 import { ref, onMounted, computed } from "vue";
 import { useRouter } from "vue-router";
 import axios from "axios";
+import EditStoreModal from "@/components/store/EditStoreModal.vue";
 
 const router = useRouter();
 
@@ -369,6 +378,7 @@ const activeTab = ref('products');
 // Modals
 const showStoreModal = ref(false);
 const showAddProductModal = ref(false);
+const showEditStoreModal = ref(false);
 
 // Forms
 const storeForm = ref({
@@ -403,9 +413,7 @@ const fetchMyStore = async () => {
         const token = localStorage.getItem("auth_token");
         if (!token) return;
 
-        const response = await axios.get("/api/stores/my-store", {
-            headers: { Authorization: `Bearer ${token}` }
-        });
+        const response = await axios.get("/api/stores/my-store");
 
         if (response.data.success) {
             myStore.value = response.data.data;
@@ -419,12 +427,7 @@ const fetchMyStore = async () => {
 
 const fetchStoreProducts = async () => {
     try {
-        const token = localStorage.getItem("auth_token");
-        if (!token) return;
-
-        const response = await axios.get("/api/store-products/my-products", {
-            headers: { Authorization: `Bearer ${token}` }
-        });
+        const response = await axios.get("/api/store-products/my-products");
 
         if (response.data.success) {
             storeProducts.value = response.data.data;
@@ -436,12 +439,7 @@ const fetchStoreProducts = async () => {
 
 const fetchStoreOrders = async () => {
     try {
-        const token = localStorage.getItem("auth_token");
-        if (!token) return;
-
-        const response = await axios.get("/api/stores/my-store/orders", {
-            headers: { Authorization: `Bearer ${token}` }
-        });
+        const response = await axios.get("/api/stores/my-store/orders");
 
         if (response.data.success) {
             orders.value = response.data.data;
@@ -453,22 +451,13 @@ const fetchStoreOrders = async () => {
 
 const fetchMyRecipes = async () => {
     try {
-        const token = localStorage.getItem("auth_token");
-        if (!token) return;
-
-        const response = await axios.get("/api/my-recipes", {
-            headers: { Authorization: `Bearer ${token}` }
-        });
-
-        console.log("Recipes API response:", response.data); // Debug log
+        const response = await axios.get("/api/my-recipes");
 
         if (response.data.success) {
-            myRecipes.value = response.data.data.data; // Access the actual recipes array from paginated response
-            console.log("Loaded recipes:", myRecipes.value); // Debug log
+            myRecipes.value = response.data.data.data || response.data.data;
         }
     } catch (error) {
         console.error("Error fetching recipes:", error);
-        alert("Failed to load recipes. Please try again.");
     }
 };
 
@@ -490,14 +479,13 @@ const closeStoreModal = () => {
     };
 };
 
+const handleStoreUpdated = async () => {
+    await fetchMyStore();
+};
+
 const createStore = async () => {
     try {
-        const token = localStorage.getItem("auth_token");
-        if (!token) return;
-
-        const response = await axios.post("/api/stores", storeForm.value, {
-            headers: { Authorization: `Bearer ${token}` }
-        });
+        const response = await axios.post("/api/stores", storeForm.value);
 
         if (response.data.success) {
             alert("Store created successfully!");
@@ -507,6 +495,27 @@ const createStore = async () => {
     } catch (error) {
         console.error("Error creating store:", error);
         alert(error.response?.data?.message || "Failed to create store");
+    }
+};
+
+const toggleStoreStatus = async () => {
+    if (!myStore.value) return;
+    
+    const action = myStore.value.is_active ? 'close' : 'open';
+    if (!confirm(`Are you sure you want to ${action} your store?`)) return;
+
+    try {
+        const response = await axios.put(`/api/stores/${myStore.value.id}`, {
+            is_active: !myStore.value.is_active
+        });
+
+        if (response.data.success) {
+            alert(`Store ${action === 'close' ? 'closed' : 'opened'} successfully!`);
+            await fetchMyStore();
+        }
+    } catch (error) {
+        console.error("Error toggling store status:", error);
+        alert("Failed to change store status");
     }
 };
 
@@ -528,18 +537,12 @@ const closeAddProductModal = () => {
 
 const addProduct = async () => {
     try {
-        const token = localStorage.getItem("auth_token");
-        if (!token) return;
-
-        // Validate that a recipe is selected
         if (!productForm.value.recipe_id) {
             alert("Please select a recipe");
             return;
         }
 
-        const response = await axios.post("/api/store-products", productForm.value, {
-            headers: { Authorization: `Bearer ${token}` }
-        });
+        const response = await axios.post("/api/store-products", productForm.value);
 
         if (response.data.success) {
             alert("Product added successfully!");
@@ -583,15 +586,9 @@ const getStatusColor = (status) => {
 
 const updateOrderStatus = async (order) => {
     try {
-        const token = localStorage.getItem("auth_token");
-        if (!token) return;
-
         await axios.put(`/api/orders/${order.id}`, {
             status: order.status
-        }, {
-            headers: { Authorization: `Bearer ${token}` }
         });
-
         alert("Order status updated!");
     } catch (error) {
         console.error("Error updating order:", error);
